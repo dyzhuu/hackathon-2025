@@ -1,0 +1,1 @@
+About Bolt Boilerplate for Next.js and Convex
