@@ -40,6 +40,8 @@ export const setupIpcs = (
     console.log(data);
   });
 
+  ipcMain.handle('platform', () => process.platform);
+
   ipcMain.handle('capture-screenshot', async () => {
     const bounds = clippy.getBounds();
     const disp = screen.getDisplayMatching(bounds);
