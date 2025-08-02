@@ -2,20 +2,19 @@ import { app, shell, BrowserWindow, ipcMain, screen } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 
-function createWindow(): void {
+function createWindow(route: string = ''): void {
   const primaryDisplay = screen.getPrimaryDisplay()
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 100,
-    height: 100,
+    width: 150,
+    height: 150,
     show: true,
     resizable: false,
-    transparent: true,
     autoHideMenuBar: true,
     alwaysOnTop: true,
-    x: primaryDisplay.workAreaSize.width - 150,
-    y: primaryDisplay.workAreaSize.height - 150,
+    x: primaryDisplay.workAreaSize.width / 2,
+    y: primaryDisplay.workAreaSize.height / 2,
     hiddenInMissionControl: true,
     frame: false,
     movable: false,
@@ -37,9 +36,9 @@ function createWindow(): void {
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    mainWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}#/${route}`)
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    mainWindow.loadFile(join(__dirname, `../renderer/index.html`))
   }
 }
 
@@ -61,6 +60,7 @@ app.whenReady().then(() => {
   ipcMain.on('ping', () => console.log('pong'))
 
   createWindow()
+  createWindow('notes')
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

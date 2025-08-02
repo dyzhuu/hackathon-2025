@@ -1,9 +1,14 @@
-function App(): React.JSX.Element {
-  return (
-    <>
-      <h1 className="text-blue-500">I'm gay dabudibadubai</h1>
-    </>
-  )
-}
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import clippy from './features/clippy/App';
+import notes from './features/notes/App';
 
-export default App
+export default function App(): React.ReactElement {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={clippy()} />
+        <Route path="/notes" element={notes()} />
+      </Routes>
+    </Router>
+  );
+}
