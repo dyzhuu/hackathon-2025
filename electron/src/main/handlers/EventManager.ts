@@ -29,6 +29,43 @@ export interface ProcessedMouseEvent {
   position: { x: number; y: number };
   input?: string;
   numberOfClicks?: number;
+  // Movement analytics (for move events)
+  velocity?: number;
+  distance?: number;
+  direction?: number;
+  // Scroll analytics (for scroll events)
+  wheelDelta?: number;
+}
+
+export interface MouseMovementSummary {
+  totalDistance: number;
+  averageVelocity: number;
+  maxVelocity: number;
+  directionalChanges: number;
+  movementVariance: number;
+  moveCount: number;
+}
+
+export interface ScrollSummary {
+  totalScrollDelta: number;
+  scrollCount: number;
+  averageScrollAmount: number;
+  scrollDirection: 'up' | 'down' | 'mixed';
+}
+
+export interface ClickSummary {
+  totalClicks: number;
+  clickRate: number;
+  doubleClicks: number;
+  rightClicks: number;
+  leftClicks: number;
+}
+
+export interface MouseData {
+  events: ProcessedMouseEvent[];
+  movementSummary: MouseMovementSummary;
+  scrollSummary: ScrollSummary;
+  clickSummary: ClickSummary;
 }
 
 export interface ProcessedKeyboardEvent {
@@ -46,7 +83,7 @@ export interface ObservationData {
   windowEndTime: string;
   durationMs: number;
   screenshotUrl?: string;
-  mouseEvents: ProcessedMouseEvent[];
+  mouseData: MouseData;
   keyboardEvents: ProcessedKeyboardEvent[];
   windowEvents: ProcessedWindowEvent[];
 }
@@ -222,7 +259,12 @@ export class EventManager extends EventEmitter {
         },
         input: this.formatMouseInput(mouseEvent),
         timestamp: event.timestamp.toString(),
-        numberOfClicks: event.numberOfClicks
+        numberOfClicks: event.numberOfClicks,
+        // Include movement and scroll analytics
+        velocity: mouseEvent.velocity,
+        distance: mouseEvent.distance,
+        direction: mouseEvent.direction,
+        wheelDelta: mouseEvent.wheelDelta
       };
       mouseEvents.push(processedEvent);
     }
@@ -250,12 +292,24 @@ export class EventManager extends EventEmitter {
       }
     }
 
+    // Calculate comprehensive mouse data with all summaries
+    const movementSummary = this.calculateMovementSummary(mouseEvents);
+    const scrollSummary = this.calculateScrollSummary(mouseEvents);
+    const clickSummary = this.calculateClickSummary(mouseEvents, windowEnd - windowStart);
+
+    const mouseData: MouseData = {
+      events: mouseEvents,
+      movementSummary,
+      scrollSummary,
+      clickSummary
+    };
+
     return {
       windowStartTime: windowStart.toString(),
       windowEndTime: windowEnd.toString(),
       durationMs: windowEnd - windowStart,
       screenshotUrl: '',
-      mouseEvents,
+      mouseData,
       keyboardEvents,
       windowEvents
     };
@@ -302,6 +356,161 @@ export class EventManager extends EventEmitter {
     // For special keys or key combinations, use full notation
     const parts = [...modifiers, event.key];
     return parts.join('+');
+  }
+
+  private calculateMovementSummary(mouseEvents: ProcessedMouseEvent[]): MouseMovementSummary {
+    const moveEvents = mouseEvents.filter((e) => e.eventType === 'move');
+
+    if (moveEvents.length === 0) {
+      return {
+        totalDistance: 0,
+        averageVelocity: 0,
+        maxVelocity: 0,
+        directionalChanges: 0,
+        movementVariance: 0,
+        moveCount: 0
+      };
+    }
+
+    let totalDistance = 0;
+    let maxVelocity = 0;
+    let directionalChanges = 0;
+    const velocities: number[] = [];
+    let lastDirection: number | null = null;
+
+    for (const event of moveEvents) {
+      if (event.distance !== undefined) {
+        totalDistance += event.distance;
+      }
+      
+      if (event.velocity !== undefined) {
+        velocities.push(event.velocity);
+        maxVelocity = Math.max(maxVelocity, event.velocity);
+      }
+
+      // Count directional changes
+      if (event.direction !== undefined && lastDirection !== null) {
+        const angleDiff = Math.abs(event.direction - lastDirection);
+        // Consider it a direction change if angle difference is > 45 degrees (π/4 radians)
+        if (angleDiff > Math.PI / 4 && angleDiff < (7 * Math.PI) / 4) {
+          directionalChanges++;
+        }
+      }
+      lastDirection = event.direction || null;
+    }
+
+    const averageVelocity =
+      velocities.length > 0 ? velocities.reduce((sum, v) => sum + v, 0) / velocities.length : 0;
+
+    // Calculate velocity variance
+    const movementVariance =
+      velocities.length > 0
+        ? velocities.reduce((sum, v) => sum + Math.pow(v - averageVelocity, 2), 0) /
+          velocities.length
+        : 0;
+
+    return {
+      totalDistance: Math.round(totalDistance * 100) / 100,
+      averageVelocity: Math.round(averageVelocity * 1000) / 1000, // Round to 3 decimal places
+      maxVelocity: Math.round(maxVelocity * 1000) / 1000,
+      directionalChanges,
+      movementVariance: Math.round(movementVariance * 1000) / 1000,
+      moveCount: moveEvents.length
+    };
+  }
+
+  private calculateScrollSummary(mouseEvents: ProcessedMouseEvent[]): ScrollSummary {
+    const scrollEvents = mouseEvents.filter((e) => e.eventType === 'scroll');
+
+    if (scrollEvents.length === 0) {
+      return {
+        totalScrollDelta: 0,
+        scrollCount: 0,
+        averageScrollAmount: 0,
+        scrollDirection: 'mixed'
+      };
+    }
+
+    let totalScrollDelta = 0;
+    let upScrolls = 0;
+    let downScrolls = 0;
+
+    for (const event of scrollEvents) {
+      if (event.wheelDelta !== undefined) {
+        totalScrollDelta += event.wheelDelta;
+
+        if (event.wheelDelta > 0) {
+          upScrolls++;
+        } else if (event.wheelDelta < 0) {
+          downScrolls++;
+        }
+      }
+    }
+
+    const averageScrollAmount =
+      scrollEvents.length > 0 ? Math.abs(totalScrollDelta) / scrollEvents.length : 0;
+
+    let scrollDirection: 'up' | 'down' | 'mixed';
+    if (upScrolls > 0 && downScrolls === 0) {
+      scrollDirection = 'up';
+    } else if (downScrolls > 0 && upScrolls === 0) {
+      scrollDirection = 'down';
+    } else {
+      scrollDirection = 'mixed';
+    }
+
+    return {
+      totalScrollDelta: Math.round(totalScrollDelta * 100) / 100,
+      scrollCount: scrollEvents.length,
+      averageScrollAmount: Math.round(averageScrollAmount * 100) / 100,
+      scrollDirection
+    };
+  }
+
+  private calculateClickSummary(
+    mouseEvents: ProcessedMouseEvent[],
+    durationMs: number
+  ): ClickSummary {
+    const clickEvents = mouseEvents.filter((e) => e.eventType === 'click');
+
+    if (clickEvents.length === 0) {
+      return {
+        totalClicks: 0,
+        clickRate: 0,
+        doubleClicks: 0,
+        rightClicks: 0,
+        leftClicks: 0
+      };
+    }
+
+    let doubleClicks = 0;
+    let rightClicks = 0;
+    let leftClicks = 0;
+
+    for (const event of clickEvents) {
+      // Count click types based on input format
+      if (event.input?.includes('rightClick')) {
+        rightClicks++;
+      } else if (event.input?.includes('leftClick')) {
+        leftClicks++;
+      }
+
+      // Count double clicks based on numberOfClicks
+      if (event.numberOfClicks && event.numberOfClicks >= 2) {
+        doubleClicks++;
+      }
+    }
+
+    const durationSec = durationMs / 1000;
+    const clickRate = durationSec > 0 ? clickEvents.length / durationSec : 0;
+
+    return {
+      totalClicks: clickEvents.length,
+      clickRate: Math.round(clickRate * 100) / 100,
+      doubleClicks,
+      rightClicks,
+      leftClicks
+    };
   }
 
   private setupMouseHandler(): void {
