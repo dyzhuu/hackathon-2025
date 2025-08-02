@@ -1,11 +1,12 @@
 import { EventEmitter } from 'events';
 import { mouseHandler, MouseEvent } from './mouse';
 import { keyboardHandler, KeyboardEvent } from './keyboard';
+import { windowHandler, WindowEvent } from './window';
 
 export interface ActivityEvent {
   id: string;
-  category: 'mouse' | 'keyboard';
-  event: MouseEvent | KeyboardEvent;
+  category: 'mouse' | 'keyboard' | 'window';
+  event: MouseEvent | KeyboardEvent | WindowEvent;
   timestamp: number;
 }
 
@@ -13,6 +14,7 @@ export interface EventStats {
   totalEvents: number;
   mouseEvents: number;
   keyboardEvents: number;
+  windowEvents: number;
   startTime: number;
   lastEventTime: number;
 }
@@ -30,11 +32,18 @@ export interface ProcessedKeyboardEvent {
   input: string;
 }
 
+export interface ProcessedWindowEvent {
+  timestamp: number;
+  active_app: string;
+  window_title: string;
+}
+
 export interface WindowedEvents {
   windowStart: number;
   windowEnd: number;
   mouseEvents: ProcessedMouseEvent[];
   keyboardEvents: ProcessedKeyboardEvent[];
+  windowEvents: ProcessedWindowEvent[];
 }
 
 export class EventManager extends EventEmitter {
@@ -59,10 +68,12 @@ export class EventManager extends EventEmitter {
     // Set up event listeners
     this.setupMouseHandler();
     this.setupKeyboardHandler();
+    this.setupWindowHandler();
 
     // Start all handlers
     mouseHandler.start();
     keyboardHandler.start();
+    windowHandler.start();
 
     // Start statistics logging interval
     this.startStatsInterval();
@@ -81,10 +92,12 @@ export class EventManager extends EventEmitter {
     // Stop all handlers
     mouseHandler.stop();
     keyboardHandler.stop();
+    windowHandler.stop();
 
     // Remove listeners
     mouseHandler.removeAllListeners();
     keyboardHandler.removeAllListeners();
+    windowHandler.removeAllListeners();
 
     this.emit('stopped');
   }
@@ -126,6 +139,7 @@ export class EventManager extends EventEmitter {
   ): WindowedEvents {
     const mouseEvents: ProcessedMouseEvent[] = [];
     const keyboardEvents: ProcessedKeyboardEvent[] = [];
+    const windowEvents: ProcessedWindowEvent[] = [];
 
     for (const event of events) {
       if (event.category === 'mouse') {
@@ -145,6 +159,14 @@ export class EventManager extends EventEmitter {
           timestamp: event.timestamp
         };
         keyboardEvents.push(processedEvent);
+      } else if (event.category === 'window') {
+        const windowEvent = event.event as WindowEvent;
+        const processedEvent: ProcessedWindowEvent = {
+          active_app: windowEvent.active_app,
+          window_title: windowEvent.window_title,
+          timestamp: event.timestamp
+        };
+        windowEvents.push(processedEvent);
       }
     }
 
@@ -152,7 +174,8 @@ export class EventManager extends EventEmitter {
       windowStart,
       windowEnd,
       mouseEvents,
-      keyboardEvents
+      keyboardEvents,
+      windowEvents
     };
   }
 
@@ -228,7 +251,17 @@ export class EventManager extends EventEmitter {
     });
   }
 
-  private addEvent(category: 'mouse' | 'keyboard', event: MouseEvent | KeyboardEvent): void {
+  private setupWindowHandler(): void {
+    windowHandler.on('window-event', (event: WindowEvent) => {
+      this.addEvent('window', event);
+    });
+
+    windowHandler.on('error', (error) => {
+      this.emit('error', { handler: 'window', error });
+    });
+  }
+
+  private addEvent(category: 'mouse' | 'keyboard' | 'window', event: MouseEvent | KeyboardEvent | WindowEvent): void {
     const activityEvent: ActivityEvent = {
       id: `${category}_${++this.eventCounter}`,
       category,
@@ -249,6 +282,7 @@ export class EventManager extends EventEmitter {
       totalEvents: this.events.length,
       mouseEvents: 0,
       keyboardEvents: 0,
+      windowEvents: 0,
       startTime: this.startTime,
       lastEventTime: 0
     };
@@ -260,6 +294,9 @@ export class EventManager extends EventEmitter {
           break;
         case 'keyboard':
           stats.keyboardEvents++;
+          break;
+        case 'window':
+          stats.windowEvents++;
           break;
       }
 
