@@ -1,6 +1,6 @@
-# Multi-Agent Clippy System
+# Multi-Agent Sticky System
 
-A sophisticated 6-agent architecture implementation using LangGraph.js that recreates an intelligent, context-aware Clippy assistant.
+A sophisticated 6-agent architecture implementation using LangGraph.js that recreates an intelligent, context-aware Sticky assistant.
 
 ## Architecture Overview
 
@@ -18,8 +18,8 @@ This system implements the following agent architecture:
 
 ### 3. **Personality Agent** (LLM-based)
 - **Role**: The Emotional Core
-- **Responsibility**: Maintains and updates Clippy's mood/personality
-- **Function**: Determines HOW Clippy should react (helpful, mischievous, bored, etc.)
+- **Responsibility**: Maintains and updates Sticky's mood/personality
+- **Function**: Determines HOW Sticky should react (helpful, mischievous, bored, etc.)
 
 ### 4. **Planner Agent** (LLM-based)
 - **Role**: The Strategist
@@ -75,7 +75,7 @@ npm run start
 
 1. **World Model Observer** starts monitoring user activity
 2. **Intent Analysis** determines what the user is doing/feeling
-3. **Personality Agent** updates Clippy's mood based on user state
+3. **Personality Agent** updates Sticky's mood based on user state
 4. **Planner** creates a concrete action plan
 5. **Response Agent** executes each action in sequence
 6. **Conductor** orchestrates the entire flow
@@ -83,10 +83,10 @@ npm run start
 ## Example Output
 
 ```
-🚀 Starting Multi-Agent Clippy System...
+🚀 Starting Multi-Agent Sticky System...
 🔍 Starting World Model Observer session...
 🧠 Analyzing user intent...
-😊 Updating Clippy's personality...
+😊 Updating Sticky's personality...
 📋 Creating action plan...
 ⚡ Executing action...
 ✅ Multi-agent workflow completed successfully!
@@ -101,7 +101,7 @@ The Response Agent can execute these actions:
 - `play_sound` - Play audio clips
 - `wait` - Pause execution
 - `speak_text` - Text-to-speech
-- `animate_clippy` - Animate Clippy character
+- `animate_sticky` - Animate Sticky character
 - `show_tooltip` - Show informational tooltips
 - `highlight_element` - Highlight UI elements
 - `shake_window` - Shake the application window

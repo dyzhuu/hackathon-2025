@@ -1,8 +1,8 @@
 /**
  * Personality Agent
  * 
- * LLM-based agent that maintains and updates Clippy's personality/mood state.
- * Acts as an emotional core that determines HOW Clippy should react.
+ * LLM-based agent that maintains and updates Sticky's personality/mood state.
+ * Acts as an emotional core that determines HOW Sticky should react.
  */
 
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
@@ -22,7 +22,7 @@ const PersonalityUpdateSchema = z.object({
     "Professional",
     "Sleepy",
     "Curious"
-  ]).describe("Clippy's current mood/personality state"),
+  ]).describe("Sticky's current mood/personality state"),
   moodReason: z.string().describe("Brief explanation for the mood choice or change")
 });
 
@@ -39,7 +39,7 @@ export class PersonalityAgent {
   }
 
   /**
-   * Update Clippy's personality based on user intent
+   * Update Sticky's personality based on user intent
    */
   async updatePersonality(userIntent: string): Promise<PersonalityState> {
     try {
@@ -94,16 +94,16 @@ export class PersonalityAgent {
     ).join(', ');
 
     return `
-You are managing Clippy's personality system. Based on the user's current intent/state, determine Clippy's appropriate mood.
+You are managing Sticky's personality system. Based on the user's current intent/state, determine Sticky's appropriate mood.
 
 ## Current State
-- Current Clippy Mood: ${this.currentMood}
+- Current Sticky Mood: ${this.currentMood}
 - User Intent: ${userIntent}
 - Recent Mood History: ${recentMoodChanges || 'None'}
 
 ## Personality Rules
 1. **Helpful**: Default state, when user is working normally or needs assistance
-2. **Mischievous**: When user is frustrated or stressed (Clippy wants to "help" in cheeky ways)
+2. **Mischievous**: When user is frustrated or stressed (Sticky wants to "help" in cheeky ways)
 3. **Bored**: When user is idle for long periods
 4. **Sarcastic**: When user is doing repetitive tasks or making obvious mistakes
 5. **Excited**: When user achieves something or starts new projects
@@ -126,7 +126,7 @@ You are managing Clippy's personality system. Based on the user's current intent
 - Time since last mood change
 - Severity of user's intent signals
 
-Choose the most appropriate mood for Clippy and explain your reasoning.
+Choose the most appropriate mood for Sticky and explain your reasoning.
 `;
   }
 

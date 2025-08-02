@@ -2,12 +2,12 @@ import { BaseMessage, BaseMessageLike } from "@langchain/core/messages";
 import { Annotation, messagesStateReducer } from "@langchain/langgraph";
 
 /**
- * Multi-Agent Clippy System State
+ * Multi-Agent Sticky System State
  *
  * This state schema supports the 6-agent architecture:
  * 1. World Model Observer (captures user environment data)
  * 2. Intent Analysis (interprets user intent from raw data)
- * 3. Personality Agent (manages Clippy's mood/personality)
+ * 3. Personality Agent (manages Sticky's mood/personality)
  * 4. Planner (creates action plans based on intent and mood)
  * 5. Conductor (orchestrates the workflow - implemented in graph logic)
  * 6. Response (executes actions)

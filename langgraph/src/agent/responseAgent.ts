@@ -47,7 +47,7 @@ export class ResponseAgent {
         case 'speak_text':
           return await this.speakText(action.parameters);
         
-        case 'animate_clippy':
+        case 'animate_sticky':
           return await this.animateClipy(action.parameters);
         
         case 'show_tooltip':
@@ -189,22 +189,22 @@ export class ResponseAgent {
   }
 
   /**
-   * Animate Clippy character
+   * Animate Sticky character
    */
   private async animateClipy(params: any): Promise<ActionResult> {
     const { animation, durationMs = 2000 } = params;
     
     if (typeof animation !== 'string') {
-      throw new Error('animate_clippy requires animation parameter');
+      throw new Error('animate_sticky requires animation parameter');
     }
 
-    console.log(`Animating Clippy: ${animation} for ${durationMs}ms`);
+    console.log(`Animating Sticky: ${animation} for ${durationMs}ms`);
     
-    // In a real implementation, this would trigger Clippy animations
+    // In a real implementation, this would trigger Sticky animations
     await this.delay(Math.min(durationMs, 100));
     
     return {
-      actionExecuted: "animate_clippy",
+      actionExecuted: "animate_sticky",
       status: "completed"
     };
   }

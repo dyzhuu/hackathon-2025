@@ -1,5 +1,5 @@
 /**
- * Multi-Agent Clippy System - Main Graph Implementation
+ * Multi-Agent Sticky System - Main Graph Implementation
  *
  * This implements the Conductor agent that orchestrates the 6-agent system:
  * START -> Intent Analysis -> Personality Agent -> Planner -> Response -> END
@@ -55,13 +55,13 @@ const analyzeIntent = async (
 };
 
 /**
- * Node 3: Update Clippy's personality based on user intent
+ * Node 3: Update Sticky's personality based on user intent
  */
 const updatePersonality = async (
   state: typeof StateAnnotation.State,
   _config: RunnableConfig,
 ): Promise<typeof StateAnnotation.Update> => {
-  console.log("😊 Updating Clippy's personality...");
+  console.log("😊 Updating Sticky's personality...");
 
   try {
     if (!state.intentAnalysis) {
@@ -240,7 +240,7 @@ const builder = new StateGraph(StateAnnotation)
 
 export const graph = builder.compile();
 
-graph.name = "Multi-Agent Clippy System";
+graph.name = "Multi-Agent Sticky System";
 
 /**
  * Run the system with provided observation data (useful for API endpoints)
@@ -248,7 +248,7 @@ graph.name = "Multi-Agent Clippy System";
 export async function runWithObservationData(
   observationData: (typeof StateAnnotation.State)["observationData"],
 ): Promise<typeof StateAnnotation.State> {
-  console.log("🚀 Starting Multi-Agent Clippy System with provided data...");
+  console.log("🚀 Starting Multi-Agent Sticky System with provided data...");
 
   const initialState = {
     messages: [],
@@ -269,10 +269,10 @@ export async function runWithObservationData(
 /**
  * Convenience function to run a complete observation cycle (fetches data from API)
  */
-export async function runClippyObservationCycle(): Promise<
+export async function runStickyObservationCycle(): Promise<
   typeof StateAnnotation.State
 > {
-  console.log("🚀 Starting Multi-Agent Clippy System...");
+  console.log("🚀 Starting Multi-Agent Sticky System...");
 
   const initialState = {
     messages: [],
@@ -298,7 +298,7 @@ export async function startContinuousMonitoring(): Promise<void> {
 
   while (true) {
     try {
-      await runClippyObservationCycle();
+      await runStickyObservationCycle();
 
       // Wait before next cycle (in production, this would be event-driven)
       await new Promise((resolve) => setTimeout(resolve, 5000));

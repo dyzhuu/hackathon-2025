@@ -1,6 +1,6 @@
-# Clippy Multi-Agent System - API Usage Guide
+# Sticky Multi-Agent System - API Usage Guide
 
-This guide explains how to use the updated Clippy Multi-Agent System with API-based observation data instead of local monitoring.
+This guide explains how to use the updated Sticky Multi-Agent System with API-based observation data instead of local monitoring.
 
 ## Overview
 
@@ -40,7 +40,7 @@ configureObservationAPI({
 });
 
 // Run the system - it will fetch data from the configured API
-const result = await runClippyObservationCycle();
+const result = await runStickyObservationCycle();
 ```
 
 ### Use Provided Data
@@ -140,7 +140,7 @@ app.use(express.json());
 const observationAPI = new ObservationAPI();
 
 // POST endpoint to receive observation data and run analysis
-app.post('/api/clippy/analyze', async (req, res) => {
+app.post('/api/sticky/analyze', async (req, res) => {
   try {
     // Process the uploaded observation data
     const observationData = await observationAPI.processUploadedData(req.body);
@@ -166,7 +166,7 @@ app.post('/api/clippy/analyze', async (req, res) => {
 });
 
 app.listen(3000, () => {
-  console.log('Clippy API server running on port 3000');
+  console.log('Sticky API server running on port 3000');
 });
 ```
 
@@ -241,10 +241,10 @@ If you were previously using the local `WorldModelObserver`, here's how to migra
 
 ### Before (Local Monitoring)
 ```typescript
-import { runClippyObservationCycle } from './agent/graph.js';
+import { runStickyObservationCycle } from './agent/graph.js';
 
 // This would generate observation data locally
-const result = await runClippyObservationCycle();
+const result = await runStickyObservationCycle();
 ```
 
 ### After (API-based)
@@ -256,7 +256,7 @@ configureObservationAPI({
   endpoint: 'https://your-api.com/observations',
   apiKey: 'your-key'
 });
-const result = await runClippyObservationCycle(); // Fetches from API
+const result = await runStickyObservationCycle(); // Fetches from API
 
 // Option 2: Provide data directly
 const observationData = /* your data */;
@@ -282,7 +282,7 @@ Enable debug logging:
 
 ```typescript
 // Set environment variable
-process.env.DEBUG = 'clippy:*';
+process.env.DEBUG = 'sticky:*';
 
 // Or use console logging
 console.log('Observation data:', observationData);

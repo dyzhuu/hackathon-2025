@@ -14,15 +14,13 @@ const IntentAnalysisSchema = z.object({
   userIntent: z
     .string()
     .describe(
-      // "Clear description of what the user was doing and their likely emotional state.",
-      "Clear description of the screenshot provided.",
+      "Clear description of what the user was doing and their likely emotional state.",
     ),
   supportingEvidence: z
     .object({
       primarySignal: z
         .string()
-        // .describe("The primary behavioral signal that led to this conclusion"),
-        .describe("The image in the screenshot"),
+        .describe("The image in the screenshotUrl"),
       value: z.string().describe("Quantitative measure supporting the signal"),
     })
     .optional(),

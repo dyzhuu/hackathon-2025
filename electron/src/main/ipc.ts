@@ -35,15 +35,15 @@ export const setupIpcs = (
 
   ipcMain.on('some-channel', (event, data) => {
     const note = createWindow('notes');
-    clippy.show();
-    // note.setPosition(clippy.getPosition())
+    sticky.show();
+    // note.setPosition(sticky.getPosition())
     console.log(data);
   });
 
   ipcMain.handle('platform', () => process.platform);
 
   ipcMain.handle('capture-screenshot', async () => {
-    const bounds = clippy.getBounds();
+    const bounds = sticky.getBounds();
     const disp = screen.getDisplayMatching(bounds);
     const sources = await desktopCapturer.getSources({
       types: ['screen'],

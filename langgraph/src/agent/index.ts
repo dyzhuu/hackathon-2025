@@ -1,5 +1,5 @@
 /**
- * Multi-Agent Clippy System - Main Entry Point
+ * Multi-Agent Sticky System - Main Entry Point
  *
  * This file exports all the components of the multi-agent system
  * and provides convenience functions for starting the system.
@@ -10,7 +10,7 @@ import { configureObservationAPI } from "./graph.js";
 // Export the main graph and utility functions
 export {
   graph,
-  runClippyObservationCycle,
+  runStickyObservationCycle,
   startContinuousMonitoring,
   configureObservationAPI,
   runWithObservationData,

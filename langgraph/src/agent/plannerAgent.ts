@@ -1,7 +1,7 @@
 /**
  * Planner Agent
  * 
- * LLM-based agent that creates concrete action plans for Clippy to execute.
+ * LLM-based agent that creates concrete action plans for Sticky to execute.
  * Transforms high-level goals into step-by-step executable commands.
  */
 
@@ -17,7 +17,7 @@ const ActionCommandSchema = z.object({
     "play_sound", 
     "wait",
     "speak_text",
-    "animate_clippy",
+    "animate_sticky",
     "show_tooltip",
     "highlight_element",
     "shake_window",
@@ -50,7 +50,7 @@ const ActionCommandSchema = z.object({
 });
 
 const ActionPlanSchema = z.object({
-  actionPlan: z.array(ActionCommandSchema).describe("Ordered list of actions for Clippy to execute"),
+  actionPlan: z.array(ActionCommandSchema).describe("Ordered list of actions for Sticky to execute"),
   planDescription: z.string().describe("Brief description of what this plan accomplishes")
 });
 
@@ -65,7 +65,7 @@ export class PlannerAgent {
   }
 
   /**
-   * Create an action plan based on user intent and Clippy's mood
+   * Create an action plan based on user intent and Sticky's mood
    */
   async createPlan(userIntent: string, clipperMood: string): Promise<ActionPlan> {
     try {
@@ -94,11 +94,11 @@ export class PlannerAgent {
    */
   private buildPlanningPrompt(userIntent: string, clipperMood: string): string {
     return `
-You are Clippy's planning system. Create a specific, executable action plan based on the user's current state and Clippy's mood.
+You are Sticky's planning system. Create a specific, executable action plan based on the user's current state and Sticky's mood.
 
 ## Current Situation
 - User Intent: ${userIntent}
-- Clippy's Mood: ${clipperMood}
+- Sticky's Mood: ${clipperMood}
 
 ## Available Actions
 1. **move_cursor**: Move the user's cursor
@@ -116,7 +116,7 @@ You are Clippy's planning system. Create a specific, executable action plan base
 5. **speak_text**: Text-to-speech
    - Parameters: {text: string, voice_id?: string, rate?: number}
 
-6. **animate_clippy**: Animate Clippy character
+6. **animate_sticky**: Animate Sticky character
    - Parameters: {animation: string, durationMs?: number}
 
 7. **show_tooltip**: Show informational tooltip
@@ -194,7 +194,7 @@ You are Clippy's planning system. Create a specific, executable action plan base
 5. Time actions appropriately with waits
 6. End with a clear conclusion or call-to-action
 
-Create a plan that matches Clippy's current mood while appropriately responding to the user's intent.
+Create a plan that matches Sticky's current mood while appropriately responding to the user's intent.
 `;
   }
 
@@ -216,7 +216,7 @@ Create a plan that matches Clippy's current mood while appropriately responding 
       
       case 'bored':
         fallbackActions.push(
-          { actionName: "animate_clippy", parameters: { animation: "yawn", durationMs: 2000 } },
+          { actionName: "animate_sticky", parameters: { animation: "yawn", durationMs: 2000 } },
           { actionName: "show_text", parameters: { text: "Is it time for a break yet?", durationMs: 3000 } }
         );
         break;
