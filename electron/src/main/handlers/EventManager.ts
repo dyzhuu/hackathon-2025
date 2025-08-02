@@ -82,7 +82,7 @@ export interface ObservationData {
   windowStartTime: string;
   windowEndTime: string;
   durationMs: number;
-  screenshotB64?: string;
+  screenshotUrl?: string;
   mouseData: MouseData;
   keyboardEvents: ProcessedKeyboardEvent[];
   windowEvents: ProcessedWindowEvent[];
@@ -175,7 +175,7 @@ export class EventManager extends EventEmitter {
 
     // Add screenshot to the observation data
     if (screenshot) {
-      processedData.screenshotB64 = screenshot.dataUrl;
+      processedData.screenshotUrl = screenshot.dataUrl;
     }
 
     // Emit window data for subscribers (pub-sub pattern)
@@ -308,7 +308,7 @@ export class EventManager extends EventEmitter {
       windowStartTime: windowStart.toString(),
       windowEndTime: windowEnd.toString(),
       durationMs: windowEnd - windowStart,
-      screenshotB64: '',
+      screenshotUrl: '',
       mouseData,
       keyboardEvents,
       windowEvents
@@ -382,7 +382,7 @@ export class EventManager extends EventEmitter {
       if (event.distance !== undefined) {
         totalDistance += event.distance;
       }
-
+      
       if (event.velocity !== undefined) {
         velocities.push(event.velocity);
         maxVelocity = Math.max(maxVelocity, event.velocity);
