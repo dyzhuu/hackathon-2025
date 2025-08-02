@@ -1,5 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 
+import sticky_confused from '../../assets/sticky_confused.png';
+import sticky_mischevious from '../../assets/sticky_mischevious.png';
 import sticky_sleepy from '../../assets/sticky_sleepy.png';
 import sticky_move_backslash_1 from '../../assets/sticky_move_backslash_1.png';
 import sticky_move_backslash_2 from '../../assets/sticky_move_backslash_2.png';
@@ -21,7 +23,9 @@ function Sticky(): React.JSX.Element {
       stickyStateRef.current = moveData.type;
 
       if (moveData.type === null) {
-        setStickyImg(sticky_sleepy);
+        const images = [sticky_sleepy, sticky_mischevious, sticky_confused];
+        const randomImg = images[Math.floor(Math.random() * images.length)];
+        setStickyImg(randomImg);
       } else {
         const linearInterval = setInterval(() => {
           if (stickyStateRef.current === null) {
@@ -57,7 +61,7 @@ function Sticky(): React.JSX.Element {
     <div className="m-0 w-full min-h-screen flex flex-col justify-center items-center bg-transparent">
       <img src={stickyImg} alt="sticky" className="w-50 h-50" />
 
-      <button onClick={createNote} className="text-white bg-gray-700">
+      <button onClick={createNote} className="rounded-md p-2 text-white font-bold bg-gray-700">
         Create Note
       </button>
     </div>

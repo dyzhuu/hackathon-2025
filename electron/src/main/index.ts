@@ -130,7 +130,7 @@ app.whenReady().then(() => {
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
       const actionKeys = Object.keys(moveActions) as (keyof typeof moveActions)[];
-      const actionIndex = Math.round(Math.random() * (actionKeys.length - 1));
+      const actionIndex = Math.floor(Math.random() * actionKeys.length);
       const randomKey = actionKeys[actionIndex];
 
       const windowSize = screen.getPrimaryDisplay();
