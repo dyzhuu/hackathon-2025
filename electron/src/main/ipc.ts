@@ -40,6 +40,9 @@ export const setupIpcs = (
     if (pos) {
       const note = createWindow('notes'); // Note window created but not stored
       note.setPosition(pos[0] + 100, pos[1] - 50); // Position note relative to main window
+      note.webContents.once('did-finish-load', () => {
+        note.webContents.send('note-data', data);
+      });
     }
     console.log(data);
   });
