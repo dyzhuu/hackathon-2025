@@ -3,8 +3,8 @@ import { activeWindow } from 'get-windows';
 
 export interface WindowEvent {
   type: 'window_change';
-  activeApp: string;
-  windowTitle: string;
+  activeApp?: string;
+  windowTitle?: string;
   processId?: number;
   bundleId?: string;
   path?: string;

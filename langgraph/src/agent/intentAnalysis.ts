@@ -40,6 +40,7 @@ export class IntentAnalysisAgent {
   async analyzeIntent(
     observationData: ObservationData,
   ): Promise<IntentAnalysis> {
+    console.log(observationData);
     try {
       const prompt = this.buildAnalysisPrompt(observationData);
 
@@ -118,8 +119,7 @@ export class IntentAnalysisAgent {
 Analyze the following user activity data and determine the user's intent and emotional state:
 
 ## Application Context
-- Process: ${observationData.applicationContext.processName}
-- Window: ${observationData.applicationContext.windowTitle}
+- Process and windows: ${observationData.windowEvents.map((e) => `${e.processName} - ${e.windowTitle}`).join(", ")}
 - Duration: ${observationData.durationMs}ms (${(observationData.durationMs / 1000).toFixed(1)}s)
 
 ## Activity Statistics
@@ -131,8 +131,8 @@ Analyze the following user activity data and determine the user's intent and emo
 - Time with no activity: ${stats.idleTimeMs}ms
 
 ## Detailed Events
-Mouse events: ${JSON.stringify(observationData.mouseEvents.slice(0, 10))}${observationData.mouseEvents.length > 10 ? "..." : ""}
-Keyboard events: ${JSON.stringify(observationData.keyboardEvents.slice(0, 10))}${observationData.keyboardEvents.length > 10 ? "..." : ""}
+Mouse events: ${JSON.stringify(observationData.mouseEvents)}}
+Keyboard events: ${JSON.stringify(observationData.keyboardEvents.slice(0, 10))}}
 
 ## Analysis Guidelines
 Look for patterns that indicate:

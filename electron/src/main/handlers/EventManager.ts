@@ -45,7 +45,7 @@ export interface ObservationData {
   windowStartTime: string;
   windowEndTime: string;
   durationMs: number;
-  screenshotUrl: string;
+  screenshotUrl?: string;
   mouseEvents: ProcessedMouseEvent[];
   keyboardEvents: ProcessedKeyboardEvent[];
   windowEvents: ProcessedWindowEvent[];
@@ -243,8 +243,8 @@ export class EventManager extends EventEmitter {
       if (event.category === 'window') {
         const windowEvent = event.event as WindowEvent;
         const processedEvent: ProcessedWindowEvent = {
-          processName: windowEvent.activeApp,
-          windowTitle: windowEvent.windowTitle
+          processName: windowEvent.activeApp ?? 'unknown',
+          windowTitle: windowEvent.windowTitle ?? 'unknown'
         };
         windowEvents.push(processedEvent);
       }

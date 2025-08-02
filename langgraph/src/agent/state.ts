@@ -15,8 +15,8 @@ import { Annotation, messagesStateReducer } from "@langchain/langgraph";
 
 // Type definitions for the agent system
 export interface WindowContext {
-  processName: string;
-  windowTitle: string;
+  processName: string | undefined;
+  windowTitle: string | undefined;
   // windowGeometry?: { x: number; y: number; width: number; height: number };
 }
 
@@ -39,7 +39,7 @@ export interface ObservationData {
   windowEndTime: string;
   durationMs: number;
   screenshotUrl?: string;
-  applicationContext: WindowContext;
+  windowEvents: WindowContext[];
   mouseEvents: MouseEvent[];
   keyboardEvents: KeyboardEvent[];
 }

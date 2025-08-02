@@ -82,9 +82,9 @@ app.whenReady().then(() => {
   });
 
   //  Set up window data consumer for LLM processing
-  // eventManager.on('window-data', (windowData: ObservationData) => {
-  //   getIntendedActions({ observationData: windowData });
-  // });
+  eventManager.on('window-data', (windowData: ObservationData) => {
+    getIntendedActions({ observationData: windowData });
+  });
 
   // Start tracking automatically (optional)
   eventManager.start().catch(console.error);
