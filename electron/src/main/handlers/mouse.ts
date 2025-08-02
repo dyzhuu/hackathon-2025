@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import { uIOhook, UiohookMouseEvent } from 'uiohook-napi';
 
 export interface MouseEvent {
-  type: 'mouse_move' | 'mouse_click' | 'mouse_down' | 'mouse_up' | 'mouse_wheel';
+  eventType: 'move' | 'click' | 'scroll';
   position: { x: number; y: number };
   button?: 'left' | 'right' | 'middle';
   wheelDelta?: number;
@@ -60,7 +60,7 @@ export class MouseHandler extends EventEmitter {
       if (!this.isTracking) return;
 
       const mouseEvent: MouseEvent = {
-        type: 'mouse_click',
+        eventType: 'click',
         position: { x: event.x, y: event.y },
         button: this.mapButton(event.button),
         modifiers: {

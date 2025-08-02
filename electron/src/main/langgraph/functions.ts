@@ -1,7 +1,7 @@
 import { ObservationData } from '../handlers/EventManager';
 import { client } from './client';
 
-export async function getIntentActions({
+export async function getIntendedActions({
   observationData
 }: {
   observationData: ObservationData;

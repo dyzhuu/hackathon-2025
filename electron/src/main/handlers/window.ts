@@ -3,8 +3,8 @@ import { activeWindow } from 'get-windows';
 
 export interface WindowEvent {
   type: 'window_change';
-  active_app: string;
-  window_title: string;
+  activeApp: string;
+  windowTitle: string;
   processId?: number;
   bundleId?: string;
   path?: string;
@@ -83,8 +83,8 @@ export class WindowHandler extends EventEmitter {
         // Emit an event for "no window" state if we previously had a different window
         const noWindowEvent: WindowEvent = {
           type: 'window_change',
-          active_app: 'No Active Window',
-          window_title: '',
+          activeApp: 'No Active Window',
+          windowTitle: '',
           timestamp: Date.now()
         };
 
@@ -97,8 +97,8 @@ export class WindowHandler extends EventEmitter {
 
       const newWindowEvent: WindowEvent = {
         type: 'window_change',
-        active_app: this.extractAppName(windowInfo.owner?.name || '', windowInfo.owner?.path || ''),
-        window_title: windowInfo.title || '',
+        activeApp: this.extractAppName(windowInfo.owner?.name || '', windowInfo.owner?.path || ''),
+        windowTitle: windowInfo.title || '',
         processId: windowInfo.owner?.processId,
         bundleId: 'bundleId' in windowInfo.owner ? windowInfo.owner.bundleId : undefined,
         path: windowInfo.owner?.path,
@@ -129,8 +129,8 @@ export class WindowHandler extends EventEmitter {
 
     // Compare relevant fields to detect changes
     return (
-      this.currentWindow.active_app !== newWindow.active_app ||
-      this.currentWindow.window_title !== newWindow.window_title
+      this.currentWindow.activeApp !== newWindow.activeApp ||
+      this.currentWindow.windowTitle !== newWindow.windowTitle
     );
   }
 
@@ -158,7 +158,7 @@ export class WindowHandler extends EventEmitter {
 
   // Helper method to format window information
   static formatWindowInfo(event: WindowEvent): string {
-    return `${event.active_app} - "${event.window_title}"`;
+    return `${event.activeApp} - "${event.windowTitle}"`;
   }
 
   // Configuration method
@@ -195,8 +195,8 @@ export class WindowHandler extends EventEmitter {
 
       const formatted = WindowHandler.formatWindowInfo({
         type: 'window_change',
-        active_app: this.extractAppName(windowInfo.owner?.name || '', windowInfo.owner?.path || ''),
-        window_title: windowInfo.title || '',
+        activeApp: this.extractAppName(windowInfo.owner?.name || '', windowInfo.owner?.path || ''),
+        windowTitle: windowInfo.title || '',
         processId: windowInfo.owner?.processId,
         bundleId: 'bundleId' in windowInfo.owner ? windowInfo.owner.bundleId : undefined,
         path: windowInfo.owner?.path,

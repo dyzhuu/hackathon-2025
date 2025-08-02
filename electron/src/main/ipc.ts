@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain, screen } from 'electron';
+import { BrowserWindow, ipcMain } from 'electron';
 import { EventManager } from './handlers/EventManager';
 
 type IPCContext = {
@@ -9,7 +9,7 @@ export const setupIpcs = (
   createWindow: (route?: string) => BrowserWindow,
   eventManager: EventManager
 ): IPCContext => {
-  let mainWindow: BrowserWindow | undefined;
+  let mainWindow: BrowserWindow | undefined; // Will be used for future main window reference
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'));
@@ -33,25 +33,16 @@ export const setupIpcs = (
     return eventManager.getStats();
   });
 
-  ipcMain.on('some-channel', (event, data) => {
-    const note = createWindow('notes');
+  ipcMain.on('some-channel', (_event, data) => {
+    createWindow('notes'); // Note window created but not stored
+    const sticky = createWindow('sticky');
     sticky.show();
-    // note.setPosition(sticky.getPosition())
+    // TODO: Position note relative to sticky
     console.log(data);
   });
 
   ipcMain.handle('platform', () => process.platform);
 
-  ipcMain.handle('capture-screenshot', async () => {
-    const bounds = sticky.getBounds();
-    const disp = screen.getDisplayMatching(bounds);
-    const sources = await desktopCapturer.getSources({
-      types: ['screen'],
-      thumbnailSize: { width: disp.size.width, height: disp.size.height }
-    });
-    const src = sources.find((s) => String(disp.id) === s.display_id) ?? sources[0];
-    return src.thumbnail.toDataURL(); // for instant thumbnail
-  });
   return {
     setMainWindow: (window) => (mainWindow = window)
   };

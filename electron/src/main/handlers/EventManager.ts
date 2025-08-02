@@ -2,11 +2,12 @@ import { EventEmitter } from 'events';
 import { mouseHandler, MouseEvent } from './mouse';
 import { keyboardHandler, KeyboardEvent } from './keyboard';
 import { windowHandler, WindowEvent } from './window';
+import { screenshotHandler, ScreenshotEvent } from './screenshot';
 
 export interface ActivityEvent {
   id: string;
-  category: 'mouse' | 'keyboard' | 'window';
-  event: MouseEvent | KeyboardEvent | WindowEvent;
+  category: 'mouse' | 'keyboard' | 'window' | 'screenshot';
+  event: MouseEvent | KeyboardEvent | WindowEvent | ScreenshotEvent;
   timestamp: number;
 }
 
@@ -23,11 +24,10 @@ export interface EventStats {
 }
 
 export interface ProcessedMouseEvent {
-  timestamp: number;
-  type: string;
-  x: number;
-  y: number;
-  input: string;
+  timestamp: string;
+  eventType: 'move' | 'click' | 'scroll';
+  position: { x: number; y: number };
+  input?: string;
   numberOfClicks?: number;
 }
 
@@ -37,13 +37,15 @@ export interface ProcessedKeyboardEvent {
 }
 
 export interface ProcessedWindowEvent {
-  process_name: string;
-  window_title: string;
+  processName: string;
+  windowTitle: string;
 }
 
 export interface ObservationData {
-  windowStart: number;
-  windowEnd: number;
+  windowStartTime: string;
+  windowEndTime: string;
+  durationMs: number;
+  screenshotUrl: string;
   mouseEvents: ProcessedMouseEvent[];
   keyboardEvents: ProcessedKeyboardEvent[];
   windowEvents: ProcessedWindowEvent[];
@@ -55,7 +57,8 @@ export class EventManager extends EventEmitter {
   private startTime: number = 0;
   private eventCounter: number = 0;
   private statsInterval: NodeJS.Timeout | null = null;
-  private readonly WINDOW_INTERVAL_MS = 5000; // 5 seconds
+  // private readonly WINDOW_INTERVAL_MS = 5000; // 5 seconds
+  private readonly WINDOW_INTERVAL_MS = 10000; // 5 seconds
   private windowedEvents: ActivityEvent[] = []; // Events for current window
 
   constructor() {
@@ -77,6 +80,7 @@ export class EventManager extends EventEmitter {
     mouseHandler.start();
     keyboardHandler.start();
     windowHandler.start();
+    screenshotHandler.start();
 
     // Start statistics logging interval
     this.startStatsInterval();
@@ -95,10 +99,12 @@ export class EventManager extends EventEmitter {
     // Stop all handlers
     mouseHandler.stop();
     keyboardHandler.stop();
+    screenshotHandler.stop();
 
     // Remove listeners
     mouseHandler.removeAllListeners();
     keyboardHandler.removeAllListeners();
+    screenshotHandler.removeAllListeners();
 
     this.emit('stopped');
   }
@@ -116,15 +122,24 @@ export class EventManager extends EventEmitter {
     }
   }
 
-  private publishWindowData(): void {
+  private async publishWindowData(): Promise<void> {
     const now = Date.now();
     const windowStart = now - this.WINDOW_INTERVAL_MS;
 
     // Get events from the last window
     const windowEvents = this.windowedEvents.filter((e) => e.timestamp >= windowStart);
 
+    // Capture screenshot for this observation cycle
+
+    const screenshot = await screenshotHandler.captureScreenshot();
+
     // Process events into the requested format
     const processedData = this.processEventsForWindow(windowEvents, windowStart, now);
+
+    // Add screenshot to the observation data
+    if (screenshot) {
+      processedData.screenshotUrl = screenshot.dataUrl;
+    }
 
     // Emit window data for subscribers (pub-sub pattern)
     this.emit('window-data', processedData);
@@ -143,7 +158,7 @@ export class EventManager extends EventEmitter {
       const mouseEvent = event.event as MouseEvent;
 
       // Only aggregate click events
-      if (mouseEvent.type !== 'mouse_click') {
+      if (mouseEvent.eventType !== 'click') {
         aggregated.push({ ...event, numberOfClicks: 1 });
         continue;
       }
@@ -154,7 +169,7 @@ export class EventManager extends EventEmitter {
       if (
         lastEvent &&
         lastEvent.category === 'mouse' &&
-        (lastEvent.event as MouseEvent).type === 'mouse_click'
+        (lastEvent.event as MouseEvent).eventType === 'click'
       ) {
         const lastMouseEvent = lastEvent.event as MouseEvent;
         const timeDiff = event.timestamp - lastEvent.timestamp;
@@ -200,11 +215,13 @@ export class EventManager extends EventEmitter {
     for (const event of aggregatedMouseEvents) {
       const mouseEvent = event.event as MouseEvent;
       const processedEvent: ProcessedMouseEvent = {
-        type: mouseEvent.type,
-        x: mouseEvent.position.x,
-        y: mouseEvent.position.y,
+        eventType: mouseEvent.eventType,
+        position: {
+          x: mouseEvent.position.x,
+          y: mouseEvent.position.y
+        },
         input: this.formatMouseInput(mouseEvent),
-        timestamp: event.timestamp,
+        timestamp: event.timestamp.toString(),
         numberOfClicks: event.numberOfClicks
       };
       mouseEvents.push(processedEvent);
@@ -226,16 +243,18 @@ export class EventManager extends EventEmitter {
       if (event.category === 'window') {
         const windowEvent = event.event as WindowEvent;
         const processedEvent: ProcessedWindowEvent = {
-          process_name: windowEvent.active_app,
-          window_title: windowEvent.window_title
+          processName: windowEvent.activeApp,
+          windowTitle: windowEvent.windowTitle
         };
         windowEvents.push(processedEvent);
       }
     }
 
     return {
-      windowStart,
-      windowEnd,
+      windowStartTime: windowStart.toString(),
+      windowEndTime: windowEnd.toString(),
+      durationMs: windowEnd - windowStart,
+      screenshotUrl: '',
       mouseEvents,
       keyboardEvents,
       windowEvents
@@ -252,21 +271,15 @@ export class EventManager extends EventEmitter {
     if (event.modifiers.meta) parts.push('Meta');
 
     // Add action based on type and button
-    switch (event.type) {
-      case 'mouse_click': {
+    switch (event.eventType) {
+      case 'click': {
         parts.push(`${event.button || 'left'}Click`);
         break;
       }
-      case 'mouse_down':
-        parts.push(`${event.button || 'left'}Down`);
-        break;
-      case 'mouse_up':
-        parts.push(`${event.button || 'left'}Up`);
-        break;
-      case 'mouse_move':
+      case 'move':
         parts.push('Move');
         break;
-      case 'mouse_wheel':
+      case 'scroll':
         parts.push(`Wheel${event.wheelDelta && event.wheelDelta > 0 ? 'Up' : 'Down'}`);
         break;
     }
@@ -319,8 +332,8 @@ export class EventManager extends EventEmitter {
   }
 
   private addEvent(
-    category: 'mouse' | 'keyboard' | 'window',
-    event: MouseEvent | KeyboardEvent | WindowEvent
+    category: 'mouse' | 'keyboard' | 'window' | 'screenshot',
+    event: MouseEvent | KeyboardEvent | WindowEvent | ScreenshotEvent
   ): void {
     const activityEvent: ActivityEvent = {
       id: `${category}_${++this.eventCounter}`,

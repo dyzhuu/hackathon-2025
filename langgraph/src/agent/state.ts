@@ -17,31 +17,29 @@ import { Annotation, messagesStateReducer } from "@langchain/langgraph";
 export interface WindowContext {
   processName: string;
   windowTitle: string;
-  windowGeometry?: { x: number; y: number; width: number; height: number };
+  // windowGeometry?: { x: number; y: number; width: number; height: number };
 }
 
 export interface MouseEvent {
   timestamp: string;
   eventType: "move" | "click" | "scroll";
   position: { x: number; y: number };
-  button?: string;
+  input?: string;
   numberOfClicks?: number;
   // scrollDelta?: { x: number; y: number };
 }
 
 export interface KeyboardEvent {
   timestamp: string;
-  eventType: "key_down" | "key_up";
-  keyName: string;
-  modifiers: string[];
+  input: string;
 }
 
 export interface ObservationData {
   windowStartTime: string;
   windowEndTime: string;
   durationMs: number;
+  screenshotUrl?: string;
   applicationContext: WindowContext;
-  screenshotUrl: string;
   mouseEvents: MouseEvent[];
   keyboardEvents: KeyboardEvent[];
 }
