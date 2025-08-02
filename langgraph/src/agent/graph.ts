@@ -1,10 +1,7 @@
-/**
- * Starter LangGraph.js Template
- * Make this code your own!
- */
 import { StateGraph } from "@langchain/langgraph";
 import { RunnableConfig } from "@langchain/core/runnables";
 import { StateAnnotation } from "./state.js";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 
 /**
  * Define a node, these do the work of the graph and should have most of the logic.
@@ -18,50 +15,25 @@ const callModel = async (
   state: typeof StateAnnotation.State,
   _config: RunnableConfig,
 ): Promise<typeof StateAnnotation.Update> => {
-  /**
-   * Do some work... (e.g. call an LLM)
-   * For example, with LangChain you could do something like:
-   *
-   * ```bash
-   * $ npm i @langchain/anthropic
-   * ```
-   *
-   * ```ts
-   * import { ChatAnthropic } from "@langchain/anthropic";
-   * const model = new ChatAnthropic({
-   *   model: "claude-3-5-sonnet-20240620",
-   *   apiKey: process.env.ANTHROPIC_API_KEY,
-   * });
-   * const res = await model.invoke(state.messages);
-   * ```
-   *
-   * Or, with an SDK directly:
-   *
-   * ```bash
-   * $ npm i openai
-   * ```
-   *
-   * ```ts
-   * import OpenAI from "openai";
-   * const openai = new OpenAI({
-   *   apiKey: process.env.OPENAI_API_KEY,
-   * });
-   *
-   * const chatCompletion = await openai.chat.completions.create({
-   *   messages: [{
-   *     role: state.messages[0]._getType(),
-   *     content: state.messages[0].content,
-   *   }],
-   *   model: "gpt-4o-mini",
-   * });
-   * ```
-   */
+  const apiKey = process.env.GOOGLE_API_KEY;
+  if (!apiKey) {
+    throw new Error("GOOGLE_API_KEY environment variable is required");
+  }
+
+  const model = new ChatGoogleGenerativeAI({
+    model: "gemini-2.0-flash-001",
+    apiKey: apiKey,
+  });
+
+  const res = await model.invoke(state.messages);
   console.log("Current state:", state);
+  console.log("Model response:", res);
+
   return {
     messages: [
       {
         role: "assistant",
-        content: `Hi there! How are you?`,
+        content: res.content,
       },
     ],
   };

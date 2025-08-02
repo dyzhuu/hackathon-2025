@@ -20,14 +20,16 @@
     "test:all": "yarn test && yarn test:int && yarn lint:langgraph"
   },
   "dependencies": {
-    "@langchain/core": "^0.3.57",
-    "@langchain/langgraph": "^0.3.0"
+    "@langchain/core": "^0.3.66",
+    "@langchain/google-genai": "^0.2.16",
+    "@langchain/langgraph": "^0.3.12"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.9.1",
     "@tsconfig/recommended": "^1.0.7",
     "@types/jest": "^29.5.0",
+    "@types/node": "^24.1.0",
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",
     "dotenv": "^16.4.5",
