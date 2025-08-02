@@ -1,9 +1,9 @@
-import clippiy from '../../assets/clippy.png'
+import clippiy from '../../assets/clippy.png';
 
 function clippy(): React.JSX.Element {
-  function fuck(): void{
-    const data = "FUCK"
-    window.electron.ipcRenderer.send("some-channel", data)
+  function fuck(): void {
+    const data = 'FUCK';
+    window.electron.ipcRenderer.send('some-channel', data);
   }
 
   return (
@@ -15,7 +15,7 @@ function clippy(): React.JSX.Element {
       />
       <button onClick={fuck}>fuck</button>
     </>
-  )
+  );
 }
 
-export default clippy
+export default clippy;
