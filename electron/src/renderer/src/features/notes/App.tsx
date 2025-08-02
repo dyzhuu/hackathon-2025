@@ -3,9 +3,18 @@ import { useEffect, useState } from 'react';
 function Notes(): React.JSX.Element {
   const [message, setMessage] = useState<string>('');
   useEffect(() => {
-    window.electron.ipcRenderer.on('note-data', (event, data) => {
+    const handler = (_event, data) => {
       setMessage(data);
-    });
+    };
+
+    window.electron.ipcRenderer.on('note-data', handler);
+
+    // Tell the main process you're ready
+    // window.electron.ipcRenderer.send('note-ready');
+
+    return () => {
+      window.electron.ipcRenderer.removeListener('note-data', handler);
+    };
   }, []);
 
   return (

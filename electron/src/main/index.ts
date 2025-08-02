@@ -105,6 +105,9 @@ app.whenReady().then(() => {
     const pos = sticky.getPosition();
     const note = createWindow('notes');
     note.setPosition(pos[0] + 100, pos[1] - 50);
+    ipcMain.once('note-ready', (event) => {
+      event.sender.send('note-data', data);
+    });
     sticky.show();
     console.log(data);
   });
