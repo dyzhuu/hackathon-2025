@@ -11,7 +11,7 @@ import { ActionPlan, ActionCommand } from './state.js';
 
 // Zod schema for action commands
 const ActionCommandSchema = z.object({
-  action_name: z.enum([
+  actionName: z.enum([
     "move_cursor",
     "show_text",
     "play_sound", 
@@ -28,8 +28,8 @@ const ActionCommandSchema = z.object({
 });
 
 const ActionPlanSchema = z.object({
-  action_plan: z.array(ActionCommandSchema).describe("Ordered list of actions for Clippy to execute"),
-  plan_description: z.string().describe("Brief description of what this plan accomplishes")
+  actionPlan: z.array(ActionCommandSchema).describe("Ordered list of actions for Clippy to execute"),
+  planDescription: z.string().describe("Brief description of what this plan accomplishes")
 });
 
 export class PlannerAgent {
@@ -50,14 +50,14 @@ export class PlannerAgent {
       const prompt = this.buildPlanningPrompt(userIntent, clipperMood);
       
       const response = await this.model.withStructuredOutput(ActionPlanSchema, {
-        name: "action_plan"
+        name: "actionPlan"
       }).invoke(prompt);
 
-      console.log(`Planner Agent: Created plan with ${response.action_plan.length} actions`);
-      console.log(`Plan: ${response.plan_description}`);
+      console.log(`Planner Agent: Created plan with ${response.actionPlan.length} actions`);
+      console.log(`Plan: ${response.planDescription}`);
 
       return {
-        action_plan: response.action_plan
+        actionPlan: response.actionPlan
       };
     } catch (error) {
       console.error('Planner Agent: Error creating plan', error);
@@ -83,19 +83,19 @@ You are Clippy's planning system. Create a specific, executable action plan base
    - Parameters: {x: number, y: number, relative?: boolean}
 
 2. **show_text**: Display text bubble/tooltip
-   - Parameters: {text: string, duration_ms?: number, position?: {x, y}}
+   - Parameters: {text: string, durationMs?: number, position?: {x, y}}
 
 3. **play_sound**: Play an audio clip
    - Parameters: {sound_file: string, volume?: number}
 
 4. **wait**: Pause execution
-   - Parameters: {duration_ms: number}
+   - Parameters: {durationMs: number}
 
 5. **speak_text**: Text-to-speech
    - Parameters: {text: string, voice_id?: string, rate?: number}
 
 6. **animate_clippy**: Animate Clippy character
-   - Parameters: {animation: string, duration_ms?: number}
+   - Parameters: {animation: string, durationMs?: number}
 
 7. **show_tooltip**: Show informational tooltip
    - Parameters: {text: string, target_element?: {x, y}, auto_dismiss?: boolean}
@@ -104,10 +104,10 @@ You are Clippy's planning system. Create a specific, executable action plan base
    - Parameters: {x: number, y: number, width: number, height: number, color?: string}
 
 9. **shake_window**: Shake the application window
-   - Parameters: {intensity: number, duration_ms: number}
+   - Parameters: {intensity: number, durationMs: number}
 
 10. **change_cursor**: Change cursor appearance
-    - Parameters: {cursor_type: string, duration_ms?: number}
+    - Parameters: {cursorType: string, durationMs?: number}
 
 11. **show_notification**: Show system notification
     - Parameters: {title: string, message: string, icon?: string}
@@ -186,23 +186,23 @@ Create a plan that matches Clippy's current mood while appropriately responding 
     switch (clipperMood.toLowerCase()) {
       case 'mischievous':
         fallbackActions.push(
-          { action_name: "move_cursor", parameters: { x: -5, y: 0, relative: true } },
-          { action_name: "wait", parameters: { duration_ms: 500 } },
-          { action_name: "show_text", parameters: { text: "Oops! 😏", duration_ms: 2000 } }
+          { actionName: "move_cursor", parameters: { x: -5, y: 0, relative: true } },
+          { actionName: "wait", parameters: { durationMs: 500 } },
+          { actionName: "show_text", parameters: { text: "Oops! 😏", durationMs: 2000 } }
         );
         break;
       
       case 'bored':
         fallbackActions.push(
-          { action_name: "animate_clippy", parameters: { animation: "yawn", duration_ms: 2000 } },
-          { action_name: "show_text", parameters: { text: "Is it time for a break yet?", duration_ms: 3000 } }
+          { actionName: "animate_clippy", parameters: { animation: "yawn", durationMs: 2000 } },
+          { actionName: "show_text", parameters: { text: "Is it time for a break yet?", durationMs: 3000 } }
         );
         break;
       
       case 'helpful':
       default:
         fallbackActions.push(
-          { action_name: "show_text", parameters: { text: "I'm here if you need help!", duration_ms: 2500 } }
+          { actionName: "show_text", parameters: { text: "I'm here if you need help!", durationMs: 2500 } }
         );
         break;
     }
@@ -210,7 +210,7 @@ Create a plan that matches Clippy's current mood while appropriately responding 
     console.log('Planner Agent: Using fallback plan due to error');
     
     return {
-      action_plan: fallbackActions
+      actionPlan: fallbackActions
     };
   }
 
@@ -220,14 +220,14 @@ Create a plan that matches Clippy's current mood while appropriately responding 
   validatePlan(plan: ActionPlan): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
     
-    if (!plan.action_plan || plan.action_plan.length === 0) {
+    if (!plan.actionPlan || plan.actionPlan.length === 0) {
       errors.push("Plan is empty");
     }
 
-    for (let i = 0; i < plan.action_plan.length; i++) {
-      const action = plan.action_plan[i];
+    for (let i = 0; i < plan.actionPlan.length; i++) {
+      const action = plan.actionPlan[i];
       
-      if (!action.action_name) {
+      if (!action.actionName) {
         errors.push(`Action ${i + 1}: Missing action name`);
       }
       
@@ -236,7 +236,7 @@ Create a plan that matches Clippy's current mood while appropriately responding 
       }
 
       // Validate specific action parameters
-      switch (action.action_name) {
+      switch (action.actionName) {
         case 'move_cursor':
           if (typeof action.parameters.x !== 'number' || typeof action.parameters.y !== 'number') {
             errors.push(`Action ${i + 1}: move_cursor requires x and y coordinates`);
@@ -246,13 +246,13 @@ Create a plan that matches Clippy's current mood while appropriately responding 
         case 'show_text':
         case 'speak_text':
           if (typeof action.parameters.text !== 'string') {
-            errors.push(`Action ${i + 1}: ${action.action_name} requires text parameter`);
+            errors.push(`Action ${i + 1}: ${action.actionName} requires text parameter`);
           }
           break;
         
         case 'wait':
-          if (typeof action.parameters.duration_ms !== 'number' || action.parameters.duration_ms < 0) {
-            errors.push(`Action ${i + 1}: wait requires positive duration_ms`);
+          if (typeof action.parameters.durationMs !== 'number' || action.parameters.durationMs < 0) {
+            errors.push(`Action ${i + 1}: wait requires positive durationMs`);
           }
           break;
       }

@@ -22,16 +22,16 @@ export class ResponseAgent {
   async executeAction(action: ActionCommand): Promise<ActionResult> {
     if (!this.isActive) {
       return {
-        action_executed: action.action_name,
+        actionExecuted: action.actionName,
         status: "failed",
         error: "Response agent is not active"
       };
     }
 
-    console.log(`Response Agent: Executing ${action.action_name}`, action.parameters);
+    console.log(`Response Agent: Executing ${action.actionName}`, action.parameters);
 
     try {
-      switch (action.action_name) {
+      switch (action.actionName) {
         case 'move_cursor':
           return await this.moveCursor(action.parameters);
         
@@ -66,12 +66,12 @@ export class ResponseAgent {
           return await this.showNotification(action.parameters);
         
         default:
-          throw new Error(`Unknown action: ${action.action_name}`);
+          throw new Error(`Unknown action: ${action.actionName}`);
       }
     } catch (error) {
-      console.error(`Response Agent: Error executing ${action.action_name}`, error);
+      console.error(`Response Agent: Error executing ${action.actionName}`, error);
       return {
-        action_executed: action.action_name,
+        actionExecuted: action.actionName,
         status: "failed",
         error: error instanceof Error ? error.message : "Unknown error"
       };
@@ -96,7 +96,7 @@ export class ResponseAgent {
     await this.delay(50);
     
     return {
-      action_executed: "move_cursor",
+      actionExecuted: "move_cursor",
       status: "completed"
     };
   }
@@ -105,23 +105,23 @@ export class ResponseAgent {
    * Show text bubble/tooltip
    */
   private async showText(params: any): Promise<ActionResult> {
-    const { text, duration_ms = 3000, position } = params;
+    const { text, durationMs = 3000, position } = params;
     
     if (typeof text !== 'string') {
       throw new Error('show_text requires text parameter');
     }
 
-    console.log(`Displaying text: "${text}" for ${duration_ms}ms`);
+    console.log(`Displaying text: "${text}" for ${durationMs}ms`);
     if (position) {
       console.log(`Position: (${position.x}, ${position.y})`);
     }
     
     // In a real implementation, this would create an actual UI element
     // For now, we'll simulate by logging and waiting
-    await this.delay(Math.min(duration_ms, 100)); // Don't actually wait the full duration
+    await this.delay(Math.min(durationMs, 100)); // Don't actually wait the full duration
     
     return {
-      action_executed: "show_text",
+      actionExecuted: "show_text",
       status: "completed"
     };
   }
@@ -130,20 +130,20 @@ export class ResponseAgent {
    * Play an audio clip
    */
   private async playSound(params: any): Promise<ActionResult> {
-    const { sound_file, volume = 1.0 } = params;
+    const { soundFile, volume = 1.0 } = params;
     
-    if (typeof sound_file !== 'string') {
-      throw new Error('play_sound requires sound_file parameter');
+    if (typeof soundFile !== 'string') {
+      throw new Error('play_sound requires soundFile parameter');
     }
 
-    console.log(`Playing sound: ${sound_file} at volume ${volume}`);
+    console.log(`Playing sound: ${soundFile} at volume ${volume}`);
     
     // In a real implementation, this would play an actual audio file
     // For now, we'll just simulate
     await this.delay(500);
     
     return {
-      action_executed: "play_sound",
+      actionExecuted: "play_sound",
       status: "completed"
     };
   }
@@ -152,17 +152,17 @@ export class ResponseAgent {
    * Wait/pause execution
    */
   private async wait(params: any): Promise<ActionResult> {
-    const { duration_ms } = params;
+    const { durationMs } = params;
     
-    if (typeof duration_ms !== 'number' || duration_ms < 0) {
-      throw new Error('wait requires positive duration_ms parameter');
+    if (typeof durationMs !== 'number' || durationMs < 0) {
+      throw new Error('wait requires positive durationMs parameter');
     }
 
-    console.log(`Waiting for ${duration_ms}ms`);
-    await this.delay(duration_ms);
+    console.log(`Waiting for ${durationMs}ms`);
+    await this.delay(durationMs);
     
     return {
-      action_executed: "wait",
+      actionExecuted: "wait",
       status: "completed"
     };
   }
@@ -171,19 +171,19 @@ export class ResponseAgent {
    * Text-to-speech
    */
   private async speakText(params: any): Promise<ActionResult> {
-    const { text, voice_id = "default", rate = 1.0 } = params;
+    const { text, voiceId = "default", rate = 1.0 } = params;
     
     if (typeof text !== 'string') {
       throw new Error('speak_text requires text parameter');
     }
 
-    console.log(`Speaking: "${text}" with voice ${voice_id} at rate ${rate}`);
+    console.log(`Speaking: "${text}" with voice ${voiceId} at rate ${rate}`);
     
     // In a real implementation, this would use a TTS engine
     await this.delay(text.length * 50); // Simulate speech duration
     
     return {
-      action_executed: "speak_text",
+      actionExecuted: "speak_text",
       status: "completed"
     };
   }
@@ -192,19 +192,19 @@ export class ResponseAgent {
    * Animate Clippy character
    */
   private async animateClipy(params: any): Promise<ActionResult> {
-    const { animation, duration_ms = 2000 } = params;
+    const { animation, durationMs = 2000 } = params;
     
     if (typeof animation !== 'string') {
       throw new Error('animate_clippy requires animation parameter');
     }
 
-    console.log(`Animating Clippy: ${animation} for ${duration_ms}ms`);
+    console.log(`Animating Clippy: ${animation} for ${durationMs}ms`);
     
     // In a real implementation, this would trigger Clippy animations
-    await this.delay(Math.min(duration_ms, 100));
+    await this.delay(Math.min(durationMs, 100));
     
     return {
-      action_executed: "animate_clippy",
+      actionExecuted: "animate_clippy",
       status: "completed"
     };
   }
@@ -213,21 +213,21 @@ export class ResponseAgent {
    * Show informational tooltip
    */
   private async showTooltip(params: any): Promise<ActionResult> {
-    const { text, target_element } = params;
+    const { text, targetElement } = params;
     
     if (typeof text !== 'string') {
       throw new Error('show_tooltip requires text parameter');
     }
 
     console.log(`Showing tooltip: "${text}"`);
-    if (target_element) {
-      console.log(`Target: (${target_element.x}, ${target_element.y})`);
+    if (targetElement) {
+      console.log(`Target: (${targetElement.x}, ${targetElement.y})`);
     }
     
     await this.delay(100);
     
     return {
-      action_executed: "show_tooltip",
+      actionExecuted: "show_tooltip",
       status: "completed"
     };
   }
@@ -248,7 +248,7 @@ export class ResponseAgent {
     await this.delay(100);
     
     return {
-      action_executed: "highlight_element",
+      actionExecuted: "highlight_element",
       status: "completed"
     };
   }
@@ -257,19 +257,19 @@ export class ResponseAgent {
    * Shake the application window
    */
   private async shakeWindow(params: any): Promise<ActionResult> {
-    const { intensity, duration_ms } = params;
+    const { intensity, durationMs } = params;
     
-    if (typeof intensity !== 'number' || typeof duration_ms !== 'number') {
-      throw new Error('shake_window requires intensity and duration_ms parameters');
+    if (typeof intensity !== 'number' || typeof durationMs !== 'number') {
+      throw new Error('shake_window requires intensity and durationMs parameters');
     }
 
-    console.log(`Shaking window with intensity ${intensity} for ${duration_ms}ms`);
+    console.log(`Shaking window with intensity ${intensity} for ${durationMs}ms`);
     
     // In a real implementation, this would actually shake the window
-    await this.delay(Math.min(duration_ms, 100));
+    await this.delay(Math.min(durationMs, 100));
     
     return {
-      action_executed: "shake_window",
+      actionExecuted: "shake_window",
       status: "completed"
     };
   }
@@ -278,18 +278,18 @@ export class ResponseAgent {
    * Change cursor appearance
    */
   private async changeCursor(params: any): Promise<ActionResult> {
-    const { cursor_type, duration_ms = 3000 } = params;
+    const { cursorType, durationMs = 3000 } = params;
     
-    if (typeof cursor_type !== 'string') {
-      throw new Error('change_cursor requires cursor_type parameter');
+    if (typeof cursorType !== 'string') {
+      throw new Error('change_cursor requires cursorType parameter');
     }
 
-    console.log(`Changing cursor to ${cursor_type} for ${duration_ms}ms`);
+    console.log(`Changing cursor to ${cursorType} for ${durationMs}ms`);
     
     await this.delay(100);
     
     return {
-      action_executed: "change_cursor",
+      actionExecuted: "change_cursor",
       status: "completed"
     };
   }
@@ -312,7 +312,7 @@ export class ResponseAgent {
     await this.delay(100);
     
     return {
-      action_executed: "show_notification",
+      actionExecuted: "show_notification",
       status: "completed"
     };
   }

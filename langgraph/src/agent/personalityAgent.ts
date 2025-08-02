@@ -11,7 +11,7 @@ import { PersonalityState } from './state.js';
 
 // Zod schema for structured output
 const PersonalityUpdateSchema = z.object({
-  clipper_mood: z.enum([
+  clipperMood: z.enum([
     "Helpful", 
     "Mischievous", 
     "Bored", 
@@ -23,7 +23,7 @@ const PersonalityUpdateSchema = z.object({
     "Sleepy",
     "Curious"
   ]).describe("Clippy's current mood/personality state"),
-  mood_reason: z.string().describe("Brief explanation for the mood choice or change")
+  moodReason: z.string().describe("Brief explanation for the mood choice or change")
 });
 
 export class PersonalityAgent {
@@ -46,32 +46,32 @@ export class PersonalityAgent {
       const prompt = this.buildPersonalityPrompt(userIntent);
       
       const response = await this.model.withStructuredOutput(PersonalityUpdateSchema, {
-        name: "personality_update"
+        name: "personalityUpdate"
       }).invoke(prompt);
 
       // Update internal state
-      if (response.clipper_mood !== this.currentMood) {
+      if (response.clipperMood !== this.currentMood) {
         this.moodHistory.push({
           mood: this.currentMood,
           timestamp: new Date(),
-          reason: `Changed from ${this.currentMood} due to: ${response.mood_reason}`
+          reason: `Changed from ${this.currentMood} due to: ${response.moodReason}`
         });
         
-        console.log(`Personality Agent: Mood changed from ${this.currentMood} to ${response.clipper_mood}`);
-        console.log(`Reason: ${response.mood_reason}`);
+        console.log(`Personality Agent: Mood changed from ${this.currentMood} to ${response.clipperMood}`);
+        console.log(`Reason: ${response.moodReason}`);
       }
 
-      this.currentMood = response.clipper_mood;
+      this.currentMood = response.clipperMood;
 
       return {
-        clipper_mood: this.currentMood
+        clipperMood: this.currentMood
       };
     } catch (error) {
       console.error('Personality Agent: Error updating personality', error);
       
       // Return current mood on error
       return {
-        clipper_mood: this.currentMood
+        clipperMood: this.currentMood
       };
     }
   }
@@ -81,7 +81,7 @@ export class PersonalityAgent {
    */
   getCurrentPersonality(): PersonalityState {
     return {
-      clipper_mood: this.currentMood
+      clipperMood: this.currentMood
     };
   }
 
@@ -146,7 +146,7 @@ Choose the most appropriate mood for Clippy and explain your reasoning.
 
     this.currentMood = mood;
     return {
-      clipper_mood: this.currentMood
+      clipperMood: this.currentMood
     };
   }
 

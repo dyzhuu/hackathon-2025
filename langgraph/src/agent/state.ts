@@ -3,7 +3,7 @@ import { Annotation, messagesStateReducer } from "@langchain/langgraph";
 
 /**
  * Multi-Agent Clippy System State
- * 
+ *
  * This state schema supports the 6-agent architecture:
  * 1. World Model Observer (captures user environment data)
  * 2. Intent Analysis (interprets user intent from raw data)
@@ -15,59 +15,60 @@ import { Annotation, messagesStateReducer } from "@langchain/langgraph";
 
 // Type definitions for the agent system
 export interface WindowContext {
-  process_name: string;
-  window_title: string;
-  window_geometry: { x: number; y: number; width: number; height: number };
+  processName: string;
+  windowTitle: string;
+  windowGeometry?: { x: number; y: number; width: number; height: number };
 }
 
 export interface MouseEvent {
   timestamp: string;
-  event_type: "move" | "click" | "scroll";
+  eventType: "move" | "click" | "scroll";
   position: { x: number; y: number };
   button?: string;
-  scroll_delta?: { x: number; y: number };
+  numberOfClicks?: number;
+  // scrollDelta?: { x: number; y: number };
 }
 
 export interface KeyboardEvent {
   timestamp: string;
-  event_type: "key_down" | "key_up";
-  key_name: string;
+  eventType: "key_down" | "key_up";
+  keyName: string;
   modifiers: string[];
 }
 
 export interface ObservationData {
-  window_start_time: string;
-  window_end_time: string;
-  duration_ms: number;
-  application_context: WindowContext;
-  screenshot_path: string;
-  mouse_events: MouseEvent[];
-  keyboard_events: KeyboardEvent[];
+  windowStartTime: string;
+  windowEndTime: string;
+  durationMs: number;
+  applicationContext: WindowContext;
+  screenshotPath: string;
+  mouseEvents: MouseEvent[];
+  keyboardEvents: KeyboardEvent[];
 }
 
 export interface IntentAnalysis {
-  user_intent: string;
-  supporting_evidence?: {
-    primary_signal: string;
+  userIntent: string;
+  supportingEvidence?: {
+    primarySignal: string;
     value: string;
   };
 }
 
 export interface PersonalityState {
-  clipper_mood: string;
+  clipperMood: string;
 }
 
 export interface ActionCommand {
-  action_name: string;
+  actionName: string;
   parameters: Record<string, any>;
 }
 
 export interface ActionPlan {
-  action_plan: ActionCommand[];
+  actionPlan: ActionCommand[];
 }
 
 export interface ActionResult {
-  action_executed: string;
+  actionExecuted: string;
   status: "completed" | "failed" | "pending";
   error?: string;
 }
@@ -81,19 +82,19 @@ export const StateAnnotation = Annotation.Root({
   }),
 
   // World Model Observer outputs
-  observation_data: Annotation<ObservationData | null>(),
+  observationData: Annotation<ObservationData | null>(),
 
   // Intent Analysis outputs
-  intent_analysis: Annotation<IntentAnalysis | null>(),
+  intentAnalysis: Annotation<IntentAnalysis | null>(),
 
   // Personality Agent outputs
-  personality_state: Annotation<PersonalityState | null>(),
+  personalityState: Annotation<PersonalityState | null>(),
 
   // Planner outputs
-  action_plan: Annotation<ActionPlan | null>(),
+  actionPlan: Annotation<ActionPlan | null>(),
 
   // Response Agent outputs
-  action_results: Annotation<ActionResult[]>({
+  actionResults: Annotation<ActionResult[]>({
     reducer: (state: ActionResult[], update: ActionResult[]) => {
       return [...state, ...update];
     },
@@ -101,11 +102,11 @@ export const StateAnnotation = Annotation.Root({
   }),
 
   // Current action index for plan execution
-  current_action_index: Annotation<number>(),
+  currentActionIndex: Annotation<number>(),
 
   // System state and control
-  system_active: Annotation<boolean>(),
+  systemActive: Annotation<boolean>(),
 
   // Error handling
-  last_error: Annotation<string | null>(),
+  lastError: Annotation<string | null>(),
 });

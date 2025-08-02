@@ -7,13 +7,13 @@
 
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { z } from "zod";
-import { ObservationData, IntentAnalysis, MouseEvent, KeyboardEvent } from './state.js';
+import { ObservationData, IntentAnalysis } from './state.js';
 
 // Zod schema for structured output
 const IntentAnalysisSchema = z.object({
-  user_intent: z.string().describe("Clear description of what the user was doing and their likely emotional state"),
-  supporting_evidence: z.object({
-    primary_signal: z.string().describe("The primary behavioral signal that led to this conclusion"),
+  userIntent: z.string().describe("Clear description of what the user was doing and their likely emotional state"),
+  supportingEvidence: z.object({
+    primarySignal: z.string().describe("The primary behavioral signal that led to this conclusion"),
     value: z.string().describe("Quantitative measure supporting the signal")
   }).optional()
 });
@@ -36,10 +36,10 @@ export class IntentAnalysisAgent {
       const prompt = this.buildAnalysisPrompt(observationData);
       
       const response = await this.model.withStructuredOutput(IntentAnalysisSchema, {
-        name: "intent_analysis"
+        name: "intentAnalysis"
       }).invoke(prompt);
 
-      console.log('Intent Analysis Agent: Analyzed user intent -', response.user_intent);
+      console.log('Intent Analysis Agent: Analyzed user intent -', response.userIntent);
       
       return response;
     } catch (error) {
@@ -47,9 +47,9 @@ export class IntentAnalysisAgent {
       
       // Fallback intent analysis
       return {
-        user_intent: "Unable to determine intent - system error",
-        supporting_evidence: {
-          primary_signal: "error",
+        userIntent: "Unable to determine intent - system error",
+        supportingEvidence: {
+          primarySignal: "error",
           value: "analysis_failed"
         }
       };
@@ -66,9 +66,9 @@ export class IntentAnalysisAgent {
 Analyze the following user activity data and determine the user's intent and emotional state:
 
 ## Application Context
-- Process: ${observationData.application_context.process_name}
-- Window: ${observationData.application_context.window_title}
-- Duration: ${observationData.duration_ms}ms (${(observationData.duration_ms / 1000).toFixed(1)}s)
+- Process: ${observationData.applicationContext.processName}
+- Window: ${observationData.applicationContext.windowTitle}
+- Duration: ${observationData.durationMs}ms (${(observationData.durationMs / 1000).toFixed(1)}s)
 
 ## Activity Statistics
 - Mouse events: ${stats.mouseEventCount}
@@ -79,8 +79,8 @@ Analyze the following user activity data and determine the user's intent and emo
 - Time with no activity: ${stats.idleTimeMs}ms
 
 ## Detailed Events
-Mouse events: ${JSON.stringify(observationData.mouse_events.slice(0, 10))}${observationData.mouse_events.length > 10 ? '...' : ''}
-Keyboard events: ${JSON.stringify(observationData.keyboard_events.slice(0, 10))}${observationData.keyboard_events.length > 10 ? '...' : ''}
+Mouse events: ${JSON.stringify(observationData.mouseEvents.slice(0, 10))}${observationData.mouseEvents.length > 10 ? '...' : ''}
+Keyboard events: ${JSON.stringify(observationData.keyboardEvents.slice(0, 10))}${observationData.keyboardEvents.length > 10 ? '...' : ''}
 
 ## Analysis Guidelines
 Look for patterns that indicate:
@@ -99,12 +99,12 @@ Provide a clear, human-readable assessment of what the user was doing and how th
    * Calculate statistical metrics from event data
    */
   private calculateEventStatistics(observationData: ObservationData) {
-    const mouseEvents = observationData.mouse_events;
-    const keyboardEvents = observationData.keyboard_events;
-    const duration = observationData.duration_ms;
+    const mouseEvents = observationData.mouseEvents;
+    const keyboardEvents = observationData.keyboardEvents;
+    const duration = observationData.durationMs;
 
     // Mouse statistics
-    const clickCount = mouseEvents.filter(e => e.event_type === 'click').length;
+    const clickCount = mouseEvents.filter(e => e.eventType === 'click').length;
     
     // Calculate mouse velocity
     let totalDistance = 0;
@@ -123,7 +123,7 @@ Provide a clear, human-readable assessment of what the user was doing and how th
     const averageMouseVelocity = totalTime > 0 ? totalDistance / totalTime : 0;
 
     // Keyboard statistics
-    const keyPressCount = keyboardEvents.filter(e => e.event_type === 'key_down').length;
+    const keyPressCount = keyboardEvents.filter(e => e.eventType === 'key_down').length;
     const keyPressRate = duration > 0 ? (keyPressCount / duration) * 1000 : 0;
 
     // Calculate idle time (simplified)

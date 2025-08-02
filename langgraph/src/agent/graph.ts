@@ -53,13 +53,13 @@ const startObservation = async (
     }
     
     return {
-      observation_data: observationData as any,
-      last_error: null as any
+      observationData: observationData as any,
+      lastError: null as any
     };
   } catch (error) {
     console.error("Error in World Model Observer:", error);
     return {
-      last_error: (error instanceof Error ? error.message : "Unknown error in observation") as any
+      lastError: (error instanceof Error ? error.message : "Unknown error in observation") as any
     };
   }
 };
@@ -74,20 +74,20 @@ const analyzeIntent = async (
   console.log("🧠 Analyzing user intent...");
   
   try {
-    if (!state.observation_data) {
+    if (!state.observationData) {
       throw new Error("No observation data available for intent analysis");
     }
     
-    const intentAnalysis = await intentAnalyzer.analyzeIntent(state.observation_data);
+    const intentAnalysis = await intentAnalyzer.analyzeIntent(state.observationData);
     
     return {
-      intent_analysis: intentAnalysis as any,
-      last_error: null as any
+      intentAnalysis: intentAnalysis as any,
+      lastError: null as any
     };
   } catch (error) {
     console.error("Error in Intent Analysis:", error);
     return {
-      last_error: (error instanceof Error ? error.message : "Unknown error in intent analysis") as any
+      lastError: (error instanceof Error ? error.message : "Unknown error in intent analysis") as any
     };
   }
 };
@@ -102,20 +102,20 @@ const updatePersonality = async (
   console.log("😊 Updating Clippy's personality...");
   
   try {
-    if (!state.intent_analysis) {
+    if (!state.intentAnalysis) {
       throw new Error("No intent analysis available for personality update");
     }
     
-    const personalityState = await personalityAgent.updatePersonality(state.intent_analysis.user_intent);
+    const personalityState = await personalityAgent.updatePersonality(state.intentAnalysis.userIntent);
     
     return {
-      personality_state: personalityState as any,
-      last_error: null as any
+      personalityState: personalityState as any,
+      lastError: null as any
     };
   } catch (error) {
     console.error("Error in Personality Agent:", error);
     return {
-      last_error: (error instanceof Error ? error.message : "Unknown error in personality update") as any
+      lastError: (error instanceof Error ? error.message : "Unknown error in personality update") as any
     };
   }
 };
@@ -130,13 +130,13 @@ const createPlan = async (
   console.log("📋 Creating action plan...");
   
   try {
-    if (!state.intent_analysis || !state.personality_state) {
+    if (!state.intentAnalysis || !state.personalityState) {
       throw new Error("Missing intent analysis or personality state for planning");
     }
     
     const actionPlan = await plannerAgent.createPlan(
-      state.intent_analysis.user_intent,
-      state.personality_state.clipper_mood
+      state.intentAnalysis.userIntent,
+      state.personalityState.clipperMood
     );
     
     // Validate the plan
@@ -146,14 +146,14 @@ const createPlan = async (
     }
     
     return {
-      action_plan: actionPlan as any,
-      current_action_index: 0 as any,
-      last_error: null as any
+      actionPlan: actionPlan as any,
+      currentActionIndex: 0 as any,
+      lastError: null as any
     };
   } catch (error) {
     console.error("Error in Planner Agent:", error);
     return {
-      last_error: (error instanceof Error ? error.message : "Unknown error in planning") as any
+      lastError: (error instanceof Error ? error.message : "Unknown error in planning") as any
     };
   }
 };
@@ -168,12 +168,12 @@ const executeAction = async (
   console.log("⚡ Executing action...");
   
   try {
-    if (!state.action_plan || !state.action_plan.action_plan) {
+    if (!state.actionPlan || !state.actionPlan.actionPlan) {
       throw new Error("No action plan available for execution");
     }
     
-    const currentIndex = state.current_action_index || 0;
-    const actions = state.action_plan.action_plan;
+    const currentIndex = state.currentActionIndex || 0;
+    const actions = state.actionPlan.actionPlan;
     
     if (currentIndex >= actions.length) {
       throw new Error("Action index out of bounds");
@@ -183,14 +183,14 @@ const executeAction = async (
     const result = await responseAgent.executeAction(currentAction);
     
     return {
-      action_results: [result] as any,
-      current_action_index: (currentIndex + 1) as any,
-      last_error: null as any
+      actionResults: [result] as any,
+      currentActionIndex: (currentIndex + 1) as any,
+      lastError: null as any
     };
   } catch (error) {
     console.error("Error in Response Agent:", error);
     return {
-      last_error: (error instanceof Error ? error.message : "Unknown error in action execution") as any
+      lastError: (error instanceof Error ? error.message : "Unknown error in action execution") as any
     };
   }
 };
@@ -200,32 +200,32 @@ const executeAction = async (
  */
 const routeFlow = (state: typeof StateAnnotation.State): string => {
   // Check for errors first
-  if (state.last_error) {
-    console.error("🚨 Workflow error:", state.last_error);
+  if (state.lastError) {
+    console.error("🚨 Workflow error:", state.lastError);
     return END;
   }
   
   // Route based on current state
-  if (!state.observation_data) {
+  if (!state.observationData) {
     return "startObservation";
   }
   
-  if (!state.intent_analysis) {
+  if (!state.intentAnalysis) {
     return "analyzeIntent";
   }
   
-  if (!state.personality_state) {
+  if (!state.personalityState) {
     return "updatePersonality";
   }
   
-  if (!state.action_plan) {
+  if (!state.actionPlan) {
     return "createPlan";
   }
   
   // Check if we have more actions to execute
-  if (state.action_plan && state.action_plan.action_plan) {
-    const currentIndex = state.current_action_index || 0;
-    if (currentIndex < state.action_plan.action_plan.length) {
+  if (state.actionPlan && state.actionPlan.actionPlan) {
+    const currentIndex = state.currentActionIndex || 0;
+    if (currentIndex < state.actionPlan.actionPlan.length) {
       return "executeAction";
     }
   }
@@ -245,13 +245,13 @@ const resetWorkflow = async (
   console.log("🔄 Resetting workflow for new cycle...");
   
   return {
-    observation_data: null as any,
-    intent_analysis: null as any,
-    personality_state: null as any,
-    action_plan: null as any,
-    current_action_index: 0 as any,
-    action_results: [] as any,
-    last_error: null as any
+    observationData: null as any,
+    intentAnalysis: null as any,
+    personalityState: null as any,
+    actionPlan: null as any,
+    currentActionIndex: 0 as any,
+    actionResults: [] as any,
+    lastError: null as any
   };
 };
 
@@ -285,14 +285,14 @@ export async function runClippyObservationCycle(): Promise<typeof StateAnnotatio
   
   const initialState = {
     messages: [],
-    observation_data: null,
-    intent_analysis: null,
-    personality_state: null,
-    action_plan: null,
-    action_results: [],
-    current_action_index: 0,
-    system_active: true,
-    last_error: null
+    observationData: null,
+    intentAnalysis: null,
+    personalityState: null,
+    actionPlan: null,
+    actionResults: [],
+    currentActionIndex: 0,
+    systemActive: true,
+    lastError: null
   } as any;
   
   const finalState = await graph.invoke(initialState);

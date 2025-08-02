@@ -34,17 +34,17 @@ export class WorldModelObserver {
     this.screenshotPath = await this.takeScreenshot();
     
     this.currentSession = {
-      window_start_time: this.sessionStartTime.toISOString(),
-      application_context: applicationContext,
-      screenshot_path: this.screenshotPath,
-      mouse_events: [],
-      keyboard_events: []
+      windowStartTime: this.sessionStartTime.toISOString(),
+      applicationContext: applicationContext,
+      screenshotPath: this.screenshotPath,
+      mouseEvents: [],
+      keyboardEvents: []
     };
 
     // Start listening for events (in a real implementation, these would be OS-level hooks)
     this.startEventListening();
     
-    console.log('World Model Observer: Started monitoring', applicationContext.process_name);
+    console.log('World Model Observer: Started monitoring', applicationContext.processName);
   }
 
   /**
@@ -55,7 +55,7 @@ export class WorldModelObserver {
 
     const event: MouseEvent = {
       timestamp: new Date().toISOString(),
-      event_type: eventType,
+      eventType: eventType,
       position,
       ...additionalData
     };
@@ -71,8 +71,8 @@ export class WorldModelObserver {
 
     const event: KeyboardEvent = {
       timestamp: new Date().toISOString(),
-      event_type: eventType,
-      key_name: keyName,
+      eventType: eventType,
+      keyName: keyName,
       modifiers
     };
 
@@ -93,13 +93,13 @@ export class WorldModelObserver {
     this.stopEventListening();
 
     const observationData: ObservationData = {
-      window_start_time: this.currentSession.window_start_time!,
-      window_end_time: endTime.toISOString(),
-      duration_ms: duration,
-      application_context: this.currentSession.application_context!,
-      screenshot_path: this.currentSession.screenshot_path!,
-      mouse_events: this.mouseEvents,
-      keyboard_events: this.keyboardEvents
+      windowStartTime: this.currentSession.windowStartTime!,
+      windowEndTime: endTime.toISOString(),
+      durationMs: duration,
+      applicationContext: this.currentSession.applicationContext!,
+      screenshotPath: this.currentSession.screenshotPath!,
+      mouseEvents: this.mouseEvents,
+      keyboardEvents: this.keyboardEvents
     };
 
     this.isMonitoring = false;
@@ -109,8 +109,8 @@ export class WorldModelObserver {
     this.keyboardEvents = [];
 
     console.log('World Model Observer: Session ended, captured', 
-      observationData.mouse_events.length, 'mouse events and', 
-      observationData.keyboard_events.length, 'keyboard events');
+      observationData.mouseEvents.length, 'mouse events and', 
+      observationData.keyboardEvents.length, 'keyboard events');
 
     return observationData;
   }
@@ -142,9 +142,9 @@ export class WorldModelObserver {
   static async getCurrentWindowContext(): Promise<WindowContext> {
     // In a real implementation, this would use OS APIs to get the active window
     return {
-      process_name: process.platform === 'darwin' ? 'Finder' : 'explorer.exe',
-      window_title: 'Sample Window',
-      window_geometry: { x: 100, y: 100, width: 1200, height: 800 }
+      processName: process.platform === 'darwin' ? 'Finder' : 'explorer.exe',
+      windowTitle: 'Sample Window',
+      windowGeometry: { x: 100, y: 100, width: 1200, height: 800 }
     };
   }
 
