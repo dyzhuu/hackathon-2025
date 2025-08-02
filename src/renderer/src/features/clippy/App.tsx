@@ -1,3 +1,5 @@
+import clippiy from '../../assets/clippy.png'
+
 function clippy(): React.JSX.Element {
   function fuck(): void{
     const data = "FUCK"
@@ -6,7 +8,11 @@ function clippy(): React.JSX.Element {
 
   return (
     <>
-      <h1 className="text-blue-500">clippy</h1>
+      <img
+        src={clippiy} // or use import if using Vite: import clippy from './assets/clippy.png'
+        alt="clippy"
+        className="w-32 h-32 object-contain"
+      />
       <button onClick={fuck}>fuck</button>
     </>
   )

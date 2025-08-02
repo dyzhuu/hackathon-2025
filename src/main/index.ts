@@ -1,22 +1,20 @@
 import { app, shell, BrowserWindow, ipcMain, screen } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import { data } from 'react-router-dom'
-import { create } from 'domain'
 
-export function createWindow(route: string = ''): void {
+export function createWindow(route: string = ''): BrowserWindow {
   const primaryDisplay = screen.getPrimaryDisplay()
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 150,
-    height: 150,
+    width: 300,
+    height: 300,
     show: true,
     resizable: false,
     autoHideMenuBar: true,
     alwaysOnTop: true,
-    x: primaryDisplay.workAreaSize.width / 2,
-    y: primaryDisplay.workAreaSize.height / 2,
+    x: Math.round((primaryDisplay.workAreaSize.width - 300) * Math.random()),
+    y: Math.round((primaryDisplay.workAreaSize.height - 300) * Math.random()),
     hiddenInMissionControl: true,
     frame: true,
     movable: true,
@@ -26,11 +24,11 @@ export function createWindow(route: string = ''): void {
     }
   })
 
-  if (import.meta.env.DEV) {
-    mainWindow.webContents.openDevTools({
-      mode: 'detach'
-    })
-  }
+  // if (import.meta.env.DEV) {
+  //   mainWindow.webContents.openDevTools({
+  //     mode: 'detach'
+  //   })
+  // }
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -48,12 +46,9 @@ export function createWindow(route: string = ''): void {
   } else {
     mainWindow.loadFile(join(__dirname, `../renderer/index.html`))
   }
-}
 
-ipcMain.on('some-channel', (event, data) => {
-  createWindow('notes')
-  console.log('FUCK')
-})
+  return mainWindow
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -72,8 +67,15 @@ app.whenReady().then(() => {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
-  createWindow()
+  const clippy = createWindow()
   //createWindow('notes')
+
+  ipcMain.on('some-channel', (event, data) => {
+    const note = createWindow('notes')
+    clippy.show()
+    // note.setPosition(clippy.getPosition())
+    console.log(data)
+  })
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
