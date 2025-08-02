@@ -78,6 +78,39 @@ app.whenReady().then(() => {
     });
   });
 
+  // Set up window data consumer for LLM processing
+  eventManager.on('window-data', (windowData) => {
+    console.log('\n' + '='.repeat(80));
+    console.log(
+      `🤖 LLM WINDOW DATA (${new Date(windowData.windowStart).toLocaleTimeString()} - ${new Date(windowData.windowEnd).toLocaleTimeString()})`
+    );
+    console.log('='.repeat(80));
+
+    console.log('🖱️  Mouse Events: ', windowData.mouseEvents);
+
+    console.log('');
+
+    console.log('⌨️  Keyboard Events: ', windowData.keyboardEvents);
+
+    console.log('='.repeat(80) + '\n');
+
+    // TODO: Send windowData to LLM service here
+    // await sendToLLM(windowData)
+  });
+
+  // Start tracking automatically (optional)
+  eventManager.start().catch(console.error);
+
+  const clippy = createWindow();
+  //createWindow('notes')
+
+  ipcMain.on('some-channel', (event, data) => {
+    const note = createWindow('notes');
+    clippy.show();
+    // note.setPosition(clippy.getPosition())
+    console.log(data);
+  });
+
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
