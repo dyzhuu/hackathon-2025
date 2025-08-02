@@ -94,7 +94,6 @@ app.whenReady().then(() => {
     createWindow('notes');
     sticky.show();
     // note.setPosition(sticky.getPosition())
-    console.log(data);
   });
 
   app.on('activate', function () {

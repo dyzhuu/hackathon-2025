@@ -38,7 +38,6 @@ export const setupIpcs = (
     const sticky = createWindow('sticky');
     sticky.show();
     // TODO: Position note relative to sticky
-    console.log(data);
   });
 
   ipcMain.handle('platform', () => process.platform);
