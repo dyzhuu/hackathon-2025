@@ -2,8 +2,10 @@
  * Multi-Agent Clippy System - Main Graph Implementation
  *
  * This implements the Conductor agent that orchestrates the 6-agent system:
- * 1. World Model Observer -> 2. Intent Analysis -> 3. Personality Agent ->
- * 4. Planner -> 5. Response (with Conductor managing the flow)
+ * START -> Intent Analysis -> Personality Agent -> Planner -> Response -> END
+ * 
+ * The workflow starts with intent analysis receiving observationData from API/SDK calls,
+ * then flows through personality updates, planning, and action execution.
  */
 
 import { StateGraph, END, START } from "@langchain/langgraph";
@@ -175,19 +177,17 @@ const routeFlow = (state: typeof StateAnnotation.State): string => {
     return END;
   }
 
-  if (!state.intentAnalysis) {
-    return "analyzeIntent";
-  }
-
-  if (!state.personalityState) {
+  // Intent analysis completed, move to personality
+  if (state.intentAnalysis && !state.personalityState) {
     return "updatePersonality";
   }
 
-  if (!state.actionPlan) {
+  // Personality updated, move to planning
+  if (state.personalityState && !state.actionPlan) {
     return "createPlan";
   }
 
-  // Check if we have more actions to execute
+  // Plan created, check if we have more actions to execute
   if (state.actionPlan && state.actionPlan.actionPlan) {
     const currentIndex = state.currentActionIndex || 0;
     if (currentIndex < state.actionPlan.actionPlan.length) {
@@ -228,6 +228,9 @@ const builder = new StateGraph(StateAnnotation)
   .addNode("createPlan", createPlan)
   .addNode("executeAction", executeAction)
   .addNode("resetWorkflow", resetWorkflow)
+
+  // Start with intent analysis - this is the entry point
+  .addEdge(START, "analyzeIntent")
 
   // Set up the flow with conditional routing
   .addConditionalEdges("analyzeIntent", routeFlow)
