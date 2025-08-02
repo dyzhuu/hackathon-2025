@@ -9,6 +9,10 @@ export interface ActivityEvent {
   timestamp: number;
 }
 
+export interface AggregatedActivityEvent extends ActivityEvent {
+  numberOfClicks?: number;
+}
+
 export interface EventStats {
   totalEvents: number;
   mouseEvents: number;
@@ -23,6 +27,7 @@ export interface ProcessedMouseEvent {
   x: number;
   y: number;
   input: string;
+  numberOfClicks?: number;
 }
 
 export interface ProcessedKeyboardEvent {
@@ -119,6 +124,56 @@ export class EventManager extends EventEmitter {
     this.windowedEvents = this.windowedEvents.filter((e) => e.timestamp > windowStart);
   }
 
+  private aggregateMouseClicks(mouseEvents: ActivityEvent[]): AggregatedActivityEvent[] {
+    const CLICK_AGGREGATION_THRESHOLD_MS = 500; // Aggregate clicks within 500ms
+    const POSITION_TOLERANCE = 5; // Aggregate clicks within 5 pixels
+
+    const aggregated: AggregatedActivityEvent[] = [];
+
+    for (const event of mouseEvents) {
+      const mouseEvent = event.event as MouseEvent;
+
+      // Only aggregate click events
+      if (mouseEvent.type !== 'mouse_click') {
+        aggregated.push({ ...event, numberOfClicks: 1 });
+        continue;
+      }
+
+      // Check if we can aggregate with the previous event
+      const lastEvent = aggregated[aggregated.length - 1];
+
+      if (
+        lastEvent &&
+        lastEvent.category === 'mouse' &&
+        (lastEvent.event as MouseEvent).type === 'mouse_click'
+      ) {
+        const lastMouseEvent = lastEvent.event as MouseEvent;
+        const timeDiff = event.timestamp - lastEvent.timestamp;
+        const positionDiff = Math.sqrt(
+          Math.pow(mouseEvent.position.x - lastMouseEvent.position.x, 2) +
+            Math.pow(mouseEvent.position.y - lastMouseEvent.position.y, 2)
+        );
+
+        // Check if events can be aggregated
+        if (
+          timeDiff <= CLICK_AGGREGATION_THRESHOLD_MS &&
+          positionDiff <= POSITION_TOLERANCE &&
+          mouseEvent.button === lastMouseEvent.button
+        ) {
+          // Aggregate with the previous event
+          lastEvent.numberOfClicks = (lastEvent.numberOfClicks || 1) + 1;
+          lastEvent.timestamp = event.timestamp; // Use the latest timestamp
+          continue;
+        }
+      }
+
+      // Start a new aggregated event
+      aggregated.push({ ...event, numberOfClicks: 1 });
+    }
+
+    return aggregated;
+  }
+
   private processEventsForWindow(
     events: ActivityEvent[],
     windowStart: number,
@@ -127,18 +182,27 @@ export class EventManager extends EventEmitter {
     const mouseEvents: ProcessedMouseEvent[] = [];
     const keyboardEvents: ProcessedKeyboardEvent[] = [];
 
+    // Separate mouse events for aggregation
+    const mouseActivityEvents = events.filter((e) => e.category === 'mouse');
+    const aggregatedMouseEvents = this.aggregateMouseClicks(mouseActivityEvents);
+
+    // Process aggregated mouse events
+    for (const event of aggregatedMouseEvents) {
+      const mouseEvent = event.event as MouseEvent;
+      const processedEvent: ProcessedMouseEvent = {
+        type: mouseEvent.type,
+        x: mouseEvent.position.x,
+        y: mouseEvent.position.y,
+        input: this.formatMouseInput(mouseEvent),
+        timestamp: event.timestamp,
+        numberOfClicks: event.numberOfClicks
+      };
+      mouseEvents.push(processedEvent);
+    }
+
+    // Process keyboard events normally
     for (const event of events) {
-      if (event.category === 'mouse') {
-        const mouseEvent = event.event as MouseEvent;
-        const processedEvent: ProcessedMouseEvent = {
-          type: mouseEvent.type,
-          x: mouseEvent.position.x,
-          y: mouseEvent.position.y,
-          input: this.formatMouseInput(mouseEvent),
-          timestamp: event.timestamp
-        };
-        mouseEvents.push(processedEvent);
-      } else if (event.category === 'keyboard') {
+      if (event.category === 'keyboard') {
         const keyboardEvent = event.event as KeyboardEvent;
         const processedEvent: ProcessedKeyboardEvent = {
           input: this.formatKeyboardInput(keyboardEvent),
@@ -167,12 +231,10 @@ export class EventManager extends EventEmitter {
 
     // Add action based on type and button
     switch (event.type) {
-      case 'mouse_click':
+      case 'mouse_click': {
         parts.push(`${event.button || 'left'}Click`);
-        if (event.clicks && event.clicks > 1) {
-          parts[parts.length - 1] = `${event.clicks}x${parts[parts.length - 1]}`;
-        }
         break;
+      }
       case 'mouse_down':
         parts.push(`${event.button || 'left'}Down`);
         break;

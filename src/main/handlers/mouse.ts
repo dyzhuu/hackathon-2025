@@ -56,7 +56,7 @@ export class MouseHandler extends EventEmitter {
 
   private setupUiohookListeners(): void {
     // Mouse click events
-    uIOhook.on('click', (event: UiohookMouseEvent) => {
+    uIOhook.on('mousedown', (event: UiohookMouseEvent) => {
       if (!this.isTracking) return;
 
       const mouseEvent: MouseEvent = {
