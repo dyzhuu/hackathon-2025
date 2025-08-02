@@ -110,8 +110,8 @@ export async function moveCursor(sticky: BrowserWindow, x: number, y: number): P
 
     sticky.setPosition(cx, cy);
     const cursorPos = screen.getCursorScreenPoint();
-    if (Math.abs(cursorPos.x - cx - 64) < 64 && Math.abs(cursorPos.y - cy - 64) < 64) {
-      await mouse.setPosition(new Point(cx + 64, cy + 64));
+    if (Math.abs(cursorPos.x - cx - 200) < 200 && Math.abs(cursorPos.y - cy - 200) < 200) {
+      await mouse.setPosition(new Point(cx + 200, cy + 200));
     }
     then = now;
 
