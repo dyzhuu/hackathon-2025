@@ -25,6 +25,12 @@ function createWindow(): void {
     }
   })
 
+  if (import.meta.env.DEV) {
+    mainWindow.webContents.openDevTools({
+      mode: 'detach'
+    })
+  }
+
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
   })
