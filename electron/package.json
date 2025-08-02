@@ -24,6 +24,7 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "@langchain/langgraph-sdk": "^0.0.105",
+    "@nut-tree-fork/nut-js": "^4.2.6",
     "@tailwindcss/vite": "^4.1.11",
     "electron-updater": "^6.3.9",
     "get-windows": "^9.2.0",

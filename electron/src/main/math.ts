@@ -1,4 +1,5 @@
-import { BrowserWindow } from 'electron';
+import { BrowserWindow, screen } from 'electron';
+import { mouse, Point, straightTo } from '@nut-tree-fork/nut-js';
 
 const velocity = 1000;
 const jork = 30;
@@ -33,7 +34,10 @@ export const moveTo = async (
     }
 
     sticky.setPosition(cx, cy);
-
+    const cursorPos = screen.getCursorScreenPoint();
+    if (Math.abs(cursorPos.x - cx - 64) < 64 && Math.abs(cursorPos.y - cy - 64) < 64) {
+      await mouse.setPosition(new Point(cx + 64, cy + 64));
+    }
     then = now;
 
     await new Promise((res) => setTimeout(res, 1_000 / 60));
