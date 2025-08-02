@@ -1,9 +1,9 @@
-import { app, shell, BrowserWindow, ipcMain, screen, desktopCapturer } from 'electron';
+import { app, shell, BrowserWindow, ipcMain, screen } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
-
 import { eventManager } from './handlers/EventManager';
 import { setupIpcs } from './ipc';
+import { moveTo } from './math';
 
 export function createWindow(route: string = ''): BrowserWindow {
   const primaryDisplay = screen.getPrimaryDisplay();
@@ -108,8 +108,8 @@ app.whenReady().then(() => {
 
   ipcMain.on('some-channel', (event, data) => {
     const note = createWindow('notes');
-    clippy.show();
-    // note.setPosition(clippy.getPosition())
+    sticky.show();
+    // note.setPosition(sticky.getPosition())
     console.log(data);
   });
 
@@ -125,6 +125,15 @@ app.whenReady().then(() => {
     y: number,
     type: string = 'jerk'
   ): Promise<void> {
+    let currentPos: number[];
+
+    while (
+      ((currentPos = sticky.getPosition()),
+      Math.abs(currentPos[0] - x) < 10 && Math.abs(currentPos[1] - y) < 10)
+    ) {
+      await wait(1 / 60);
+    }
+
     return new Promise((resolve) => {
       const currentPos = sticky.getPosition();
 
@@ -162,10 +171,12 @@ app.whenReady().then(() => {
     return position;
   }
 
-  setInterval(async () => {
-    const loc = randomLocation();
-    await moveStickyTo(sticky, loc[0], loc[1], 'jerk');
-  }, 1000);
+  (async () => {
+    while (true) {
+      const [x, y] = randomLocation();
+      await moveTo(sticky, x, y, 'jerk');
+    }
+  })();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

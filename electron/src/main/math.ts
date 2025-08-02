@@ -1,0 +1,46 @@
+import { BrowserWindow } from 'electron';
+
+const velocity = 100;
+const jork = 10;
+
+const distance = ([x1, y1]: [number, number], [x2, y2]: [number, number]): number =>
+  Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+
+export const moveTo = async (
+  sticky: BrowserWindow,
+  x: number,
+  y: number,
+  type: 'jerk' | 'linear' = 'jerk'
+): Promise<void> => {
+  let then = Date.now();
+
+  let stickyPos: [number, number];
+
+  console.log((stickyPos = sticky.getPosition() as [number, number]), distance(stickyPos, [x, y]));
+  while (
+    ((stickyPos = sticky.getPosition() as [number, number]), distance(stickyPos, [x, y]) > 10)
+  ) {
+    let [cx, cy] = stickyPos;
+    const now = Date.now();
+    const delta = now - then;
+
+    cx += Math.floor(velocity * (delta / 1000) * Math.sign(x - cx));
+    cy += Math.floor(velocity * (delta / 1000) * Math.sign(y - cy));
+
+    if (type === 'jerk') {
+      cx += Math.floor(Math.random() * jork) * Math.sign(Math.random() - 0.5);
+      cy += Math.floor(Math.random() * jork) * Math.sign(Math.random() - 0.5);
+    }
+
+    try {
+      sticky.setPosition(cx, cy);
+    } catch (ex) {
+      console.error(ex);
+      return;
+    }
+
+    then = now;
+
+    await new Promise((res) => setTimeout(res, 1_000 / 60));
+  }
+};
