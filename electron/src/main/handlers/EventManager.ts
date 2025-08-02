@@ -2,11 +2,12 @@ import { EventEmitter } from 'events';
 import { mouseHandler, MouseEvent } from './mouse';
 import { keyboardHandler, KeyboardEvent } from './keyboard';
 import { windowHandler, WindowEvent } from './window';
+import { screenshotHandler, ScreenshotEvent } from './screenshot';
 
 export interface ActivityEvent {
   id: string;
-  category: 'mouse' | 'keyboard' | 'window';
-  event: MouseEvent | KeyboardEvent | WindowEvent;
+  category: 'mouse' | 'keyboard' | 'window' | 'screenshot';
+  event: MouseEvent | KeyboardEvent | WindowEvent | ScreenshotEvent;
   timestamp: number;
 }
 
@@ -18,6 +19,7 @@ export interface EventStats {
   totalEvents: number;
   mouseEvents: number;
   keyboardEvents: number;
+  screenshotEvents: number;
   startTime: number;
   lastEventTime: number;
 }
@@ -72,11 +74,13 @@ export class EventManager extends EventEmitter {
     this.setupMouseHandler();
     this.setupKeyboardHandler();
     this.setupWindowHandler();
+    this.setupScreenshotHandler();
 
     // Start all handlers
     mouseHandler.start();
     keyboardHandler.start();
     windowHandler.start();
+    screenshotHandler.start();
 
     // Start statistics logging interval
     this.startStatsInterval();
@@ -95,6 +99,8 @@ export class EventManager extends EventEmitter {
     // Stop all handlers
     mouseHandler.stop();
     keyboardHandler.stop();
+    windowHandler.stop();
+    screenshotHandler.stop();
 
     // Remove listeners
     mouseHandler.removeAllListeners();
@@ -119,6 +125,9 @@ export class EventManager extends EventEmitter {
   private publishWindowData(): void {
     const now = Date.now();
     const windowStart = now - this.WINDOW_INTERVAL_MS;
+
+    // Capture screenshot once per publish
+    screenshotHandler.captureScreenshot();
 
     // Get events from the last window
     const windowEvents = this.windowedEvents.filter((e) => e.timestamp >= windowStart);
@@ -318,9 +327,20 @@ export class EventManager extends EventEmitter {
     });
   }
 
+  private setupScreenshotHandler(): void {
+    screenshotHandler.on('screenshot-event', (event: ScreenshotEvent) => {
+      this.addEvent('screenshot', event);
+    });
+
+    screenshotHandler.on('error', (error) => {
+      console.error('❌ Screenshot handler error:', error);
+      this.emit('error', { handler: 'screenshot', error });
+    });
+  }
+
   private addEvent(
-    category: 'mouse' | 'keyboard' | 'window',
-    event: MouseEvent | KeyboardEvent | WindowEvent
+    category: 'mouse' | 'keyboard' | 'window' | 'screenshot',
+    event: MouseEvent | KeyboardEvent | WindowEvent | ScreenshotEvent
   ): void {
     const activityEvent: ActivityEvent = {
       id: `${category}_${++this.eventCounter}`,
@@ -342,6 +362,7 @@ export class EventManager extends EventEmitter {
       totalEvents: this.events.length,
       mouseEvents: 0,
       keyboardEvents: 0,
+      screenshotEvents: 0,
       startTime: this.startTime,
       lastEventTime: 0
     };
@@ -353,6 +374,9 @@ export class EventManager extends EventEmitter {
           break;
         case 'keyboard':
           stats.keyboardEvents++;
+          break;
+        case 'screenshot':
+          stats.screenshotEvents++;
           break;
       }
 

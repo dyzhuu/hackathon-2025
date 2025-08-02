@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain, screen } from 'electron';
+import { BrowserWindow, ipcMain } from 'electron';
 import { EventManager } from './handlers/EventManager';
 
 type IPCContext = {
@@ -35,6 +35,7 @@ export const setupIpcs = (
 
   ipcMain.on('some-channel', (event, data) => {
     const note = createWindow('notes');
+    const sticky = createWindow('sticky');
     sticky.show();
     // note.setPosition(sticky.getPosition())
     console.log(data);
@@ -42,16 +43,8 @@ export const setupIpcs = (
 
   ipcMain.handle('platform', () => process.platform);
 
-  ipcMain.handle('capture-screenshot', async () => {
-    const bounds = sticky.getBounds();
-    const disp = screen.getDisplayMatching(bounds);
-    const sources = await desktopCapturer.getSources({
-      types: ['screen'],
-      thumbnailSize: { width: disp.size.width, height: disp.size.height }
-    });
-    const src = sources.find((s) => String(disp.id) === s.display_id) ?? sources[0];
-    return src.thumbnail.toDataURL(); // for instant thumbnail
-  });
+  // Screenshot capture is now handled by the ScreenshotHandler via EventManager
+  // The old IPC handler has been removed - screenshots are captured automatically during event publishing
   return {
     setMainWindow: (window) => (mainWindow = window)
   };
