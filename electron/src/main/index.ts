@@ -106,7 +106,7 @@ app.whenReady().then(() => {
     const note = createWindow('notes');
     note.setPosition(pos[0] + 100, pos[1] - 50);
     sticky.show();
-    // note.setPosition(sticky.getPosition())
+    console.log(data);
   });
 
   app.on('activate', function () {
@@ -116,18 +116,26 @@ app.whenReady().then(() => {
   });
 
   // Actions
+  const moveActions = {
+    jerk: moveLinear,
+    linear: moveLinear
+  };
+
   (async () => {
     while (true) {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
-      sticky.webContents.send('sticky-move', 'linear');
+      const actionKeys = Object.keys(moveActions) as (keyof typeof moveActions)[];
+      const randomKey = actionKeys[Math.floor(Math.random() * actionKeys.length)];
+
+      sticky.webContents.send('sticky-move', randomKey);
 
       const windowSize = screen.getPrimaryDisplay();
       const [x, y] = randomLocation([
         windowSize.workAreaSize.width,
         windowSize.workAreaSize.height
       ]);
-      await moveLinear(sticky, x, y);
+      await moveActions[randomKey](sticky, x, y);
 
       sticky.webContents.send('sticky-move', null);
     }
