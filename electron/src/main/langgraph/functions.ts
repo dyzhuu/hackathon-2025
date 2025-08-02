@@ -18,7 +18,7 @@ export async function getIntendedActions({
   );
 
   for await (const chunk of streamResponse) {
-    console.log(`Receiving new event of type: ${chunk.event}...`);
-    console.log(JSON.stringify(chunk.data));
+    // console.log(`Receiving new event of type: ${chunk.event}...`);
+    // console.log(JSON.stringify(chunk.data));
   }
 }

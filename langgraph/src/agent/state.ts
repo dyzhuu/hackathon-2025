@@ -46,9 +46,12 @@ export interface ObservationData {
 
 export interface IntentAnalysis {
   userIntent: string;
+  emotionalState: "focused" | "frustrated" | "exploring" | "idle" | "engaged" | "rushed" | "confused";
+  confidenceLevel: number;
+  keyBehaviorSignals: string[];
   supportingEvidence?: {
     primarySignal: string;
-    value: string;
+    quantitativeMetric: string;
   };
 }
 

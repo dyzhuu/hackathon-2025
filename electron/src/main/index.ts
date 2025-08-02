@@ -95,7 +95,7 @@ app.whenReady().then(() => {
     const note = createWindow('notes');
     note.setPosition(pos[0] + 100, pos[1] - 50);
     sticky.show();
-    console.log(data);
+    // note.setPosition(sticky.getPosition())
   });
 
   app.on('activate', function () {
