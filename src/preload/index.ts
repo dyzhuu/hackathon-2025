@@ -1,5 +1,7 @@
-import { contextBridge, ipcRenderer } from 'electron'
-import { electronAPI } from '@electron-toolkit/preload'
+import { contextBridge, ipcRenderer } from 'electron';
+import { electronAPI } from '@electron-toolkit/preload';
+
+type Platform = 'aix' | 'darwin' | 'freebsd' | 'linux' | 'openbsd' | 'sunos' | 'win32';
 
 // Custom APIs for renderer
 const api = {
@@ -9,32 +11,35 @@ const api = {
   getTrackingStats: () => ipcRenderer.invoke('get-tracking-stats'),
   captureScreenshot: () => ipcRenderer.invoke('capture-screenshot'),
   getMonitors: () => ipcRenderer.invoke('get-monitors'),
+  getPlatform: (): Promise<Platform> => ipcRenderer.invoke('platform'),
   getEvents: (category?: string, limit?: number) =>
     ipcRenderer.invoke('get-events', category, limit),
 
   // Event listener
   onActivityEvent: (callback: (event: any) => void) => {
-    ipcRenderer.on('activity-event', (_, event) => callback(event))
+    ipcRenderer.on('activity-event', (_, event) => callback(event));
     // Return cleanup function
     return () => {
-      ipcRenderer.removeAllListeners('activity-event')
-    }
+      ipcRenderer.removeAllListeners('activity-event');
+    };
   }
-}
+};
+
+export type Api = typeof api;
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
 // just add to the DOM global.
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
+    contextBridge.exposeInMainWorld('electron', electronAPI);
+    contextBridge.exposeInMainWorld('api', api);
   } catch (error) {
-    console.error(error)
+    console.error(error);
   }
 } else {
   // @ts-ignore (define in dts)
-  window.electron = electronAPI
+  window.electron = electronAPI;
   // @ts-ignore (define in dts)
-  window.api = api
+  window.api = api;
 }

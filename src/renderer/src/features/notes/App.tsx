@@ -3,7 +3,7 @@ function App(): React.JSX.Element {
     <>
       <h1 className="text-blue-500">notes</h1>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
