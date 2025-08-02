@@ -110,3 +110,40 @@ export async function moveCursor(sticky: BrowserWindow, x: number, y: number): P
     await new Promise((res) => setTimeout(res, 1_000 / 60));
   }
 }
+
+// Specifies an x-coordinate to through a window to. Gravity simulation
+export async function throwWindow(window: BrowserWindow, end: number): Promise<void> {
+  const moveInterval = 1000 / 30; // 30 Steps per second
+  const steps = Math.round(Math.random() * STEP_RANGE[1]) + STEP_RANGE[0];
+
+  const start = window.getPosition();
+  const stepSizeX = (end - start[0]) / steps;
+
+  const screenHeight = screen.getPrimaryDisplay().workAreaSize.height;
+  const gravity = (screenHeight - start[1]) / steps;
+  const xDir = Math.sign(stepSizeX);
+
+  let stepSizeY = 0;
+
+  return new Promise((resolve) => {
+    const moveIntervalId = setInterval(() => {
+      const currentPosition = window.getPosition();
+
+      const newX = Math.round(currentPosition[0] + stepSizeX);
+
+      stepSizeY += gravity;
+      const newY = Math.round(currentPosition[1] + stepSizeY);
+
+      if (
+        (xDir === 1 && newX >= end) ||
+        (xDir === -1 && newX <= end) ||
+        newY >= screen.getPrimaryDisplay().workAreaSize.height
+      ) {
+        clearInterval(moveIntervalId);
+        resolve();
+      } else {
+        window.setPosition(newX, newY);
+      }
+    }, moveInterval);
+  });
+}

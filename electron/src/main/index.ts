@@ -4,7 +4,7 @@ import { setupIpcs } from './ipc';
 import { join } from 'path';
 import { eventManager, ObservationData } from './handlers/EventManager';
 import { getIntendedActions } from './langgraph/functions';
-import { randomLocation, moveLinear, moveJerk, moveCursor } from './logic/movement';
+import { randomLocation, moveLinear, moveJerk, moveCursor, throwWindow } from './logic/movement';
 
 // Create a window
 function createWindow(
@@ -22,7 +22,7 @@ function createWindow(
     resizable: false,
     autoHideMenuBar: true,
     alwaysOnTop: true,
-    x: Math.round((primaryDisplay.workAreaSize.width - 500) * Math.random()), // chang ethis later
+    x: Math.round((primaryDisplay.workAreaSize.width - 500) * Math.random()), // change this later
     y: Math.round((primaryDisplay.workAreaSize.height - 500) * Math.random() + 200),
     hiddenInMissionControl: true,
     frame: hasFrame,
@@ -103,12 +103,22 @@ app.whenReady().then(() => {
 
   // Event listeners
   ipcMain.on('create-note', (_event, data) => {
-    const pos = sticky.getPosition();
     const note = createWindow('notes');
+
+    const pos = sticky.getPosition();
+
     note.setPosition(pos[0] + 100, pos[1] - 50);
+    if (Math.random() > 0.5) {
+      throwWindow(
+        note,
+        Math.random() * pos[0] + Math.random() > 0.5 ? 1 : -1 * Math.random() * 1000
+      );
+    }
+
     ipcMain.once('note-ready', (event) => {
       event.sender.send('note-data', data);
     });
+
     sticky.show();
     console.log(data);
   });
