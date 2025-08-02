@@ -1,8 +1,10 @@
 import { useRef, useState, useEffect } from 'react';
 
-import clippy from '../../assets/clippy.png';
-import sticky_move_1 from '../../assets/sticky_move_1.png';
-import sticky_move_2 from '../../assets/sticky_move_2.png';
+import sticky_sleepy from '../../assets/sticky_sleepy.png';
+import sticky_move_backslash_1 from '../../assets/sticky_move_backslash_1.png';
+import sticky_move_backslash_2 from '../../assets/sticky_move_backslash_2.png';
+import sticky_move_slash_1 from '../../assets/sticky_move_slash_1.png';
+import sticky_move_slash_2 from '../../assets/sticky_move_slash_2.png';
 
 function Sticky(): React.JSX.Element {
   function createNote(): void {
@@ -12,14 +14,14 @@ function Sticky(): React.JSX.Element {
 
   const stickyStateRef = useRef<string | null>(null);
 
-  const [stickyImg, setStickyImg] = useState<string>(clippy);
+  const [stickyImg, setStickyImg] = useState<string>(sticky_sleepy);
 
   useEffect(() => {
-    const unsubscribeMove = window.electron.ipcRenderer.on('sticky-move', (_event, moveType) => {
-      stickyStateRef.current = moveType;
+    const unsubscribeMove = window.electron.ipcRenderer.on('sticky-move', (_event, moveData) => {
+      stickyStateRef.current = moveData.type;
 
-      if (moveType === null) {
-        setStickyImg(clippy);
+      if (moveData.type === null) {
+        setStickyImg(sticky_sleepy);
       } else {
         const linearInterval = setInterval(() => {
           if (stickyStateRef.current === null) {
@@ -30,7 +32,13 @@ function Sticky(): React.JSX.Element {
                 stickyStateRef.current !== null &&
                 ['linear', 'jerk', 'cursor'].includes(stickyStateRef.current)
               ) {
-                return prevImg !== sticky_move_1 ? sticky_move_1 : sticky_move_2;
+                const images =
+                  moveData.direction === 'slash'
+                    ? [sticky_move_slash_1, sticky_move_slash_2]
+                    : moveData.direction === 'backslash'
+                      ? [sticky_move_backslash_1, sticky_move_backslash_2]
+                      : [prevImg, prevImg];
+                return prevImg === images[0] ? images[1] : images[0];
               }
               // To add more move types images here
               return prevImg;
@@ -46,10 +54,10 @@ function Sticky(): React.JSX.Element {
   }, []);
 
   return (
-    <div className="m-0 w-full min-h-screen flex justify-center items-center bg-transparent">
+    <div className="m-0 w-full min-h-screen flex flex-col justify-center items-center bg-transparent">
       <img src={stickyImg} alt="sticky" className="w-50 h-50" />
 
-      <button onClick={createNote} className="text-white">
+      <button onClick={createNote} className="text-white bg-gray-700">
         Create Note
       </button>
     </div>

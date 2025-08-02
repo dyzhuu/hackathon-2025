@@ -127,18 +127,27 @@ app.whenReady().then(() => {
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
       const actionKeys = Object.keys(moveActions) as (keyof typeof moveActions)[];
-      const randomKey = actionKeys[Math.floor(Math.random() * actionKeys.length)];
-
-      sticky.webContents.send('sticky-move', randomKey);
+      const actionIndex = Math.round(Math.random() * (actionKeys.length - 1));
+      const randomKey = actionKeys[actionIndex];
 
       const windowSize = screen.getPrimaryDisplay();
-      const [x, y] = randomLocation([
+      const [endX, endY] = randomLocation([
         windowSize.workAreaSize.width,
         windowSize.workAreaSize.height
       ]);
-      await moveActions[randomKey](sticky, x, y);
 
-      sticky.webContents.send('sticky-move', null);
+      const stickyPos = sticky.getPosition();
+      const move: { type: string | null; direction: string } = {
+        type: randomKey,
+        direction:
+          Math.sign(endX - stickyPos[0]) === Math.sign(endY - stickyPos[1]) ? 'backslash' : 'slash'
+      };
+      sticky.webContents.send('sticky-move', move);
+
+      await moveActions[randomKey](sticky, endX, endY);
+
+      move.type = null;
+      sticky.webContents.send('sticky-move', move);
     }
   })();
 });

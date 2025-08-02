@@ -31,7 +31,6 @@ export async function moveLinear(window: BrowserWindow, endX: number, endY: numb
         (yDir === 1 && newY >= endY) ||
         (yDir === -1 && newY <= endY)
       ) {
-        window.setPosition(Math.round(endX), Math.round(endY));
         clearInterval(moveIntervalId);
         resolve();
       } else {
@@ -52,7 +51,7 @@ export async function moveJerk(window: BrowserWindow, x: number, y: number): Pro
 
   let stickyPos: [number, number];
 
-  console.log((stickyPos = window.getPosition() as [number, number]), distance(stickyPos, [x, y]));
+  // console.log((stickyPos = window.getPosition() as [number, number]), distance(stickyPos, [x, y]));
   while (
     ((stickyPos = window.getPosition() as [number, number]), distance(stickyPos, [x, y]) > 10)
   ) {
@@ -82,7 +81,6 @@ export async function moveJerk(window: BrowserWindow, x: number, y: number): Pro
 
 export async function moveCursor(sticky: BrowserWindow, x: number, y: number): Promise<void> {
   const velocity = 1000;
-  const jork = 30;
 
   const distance = ([x1, y1]: [number, number], [x2, y2]: [number, number]): number =>
     Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
@@ -101,12 +99,6 @@ export async function moveCursor(sticky: BrowserWindow, x: number, y: number): P
 
     cx += Math.floor(velocity * (delta / 1000) * Math.sign(x - cx));
     cy += Math.floor(velocity * (delta / 1000) * Math.sign(y - cy));
-
-    // Randomly apply jerk effect with 50% chance
-    if (Math.random() < 0.5) {
-      cx += Math.floor(Math.random() * jork) * Math.sign(Math.random() - 0.5);
-      cy += Math.floor(Math.random() * jork) * Math.sign(Math.random() - 0.5);
-    }
 
     sticky.setPosition(cx, cy);
     const cursorPos = screen.getCursorScreenPoint();
