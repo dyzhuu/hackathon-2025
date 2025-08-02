@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { uIOhook, UiohookMouseEvent, UiohookWheelEvent } from 'uiohook-napi'
+import { uIOhook, UiohookMouseEvent } from 'uiohook-napi'
 
 export interface MouseEvent {
   type: 'mouse_move' | 'mouse_click' | 'mouse_down' | 'mouse_up' | 'mouse_wheel'
@@ -139,61 +139,61 @@ export class MouseHandler extends EventEmitter {
     })
 
     // Mouse move events (throttled to prevent overwhelming)
-    let lastMoveTime = 0
-    const moveThrottleMs = 50 // Only emit move events every 50ms
+    // let lastMoveTime = 0
+    // const moveThrottleMs = 50 // Only emit move events every 50ms
 
-    uIOhook.on('mousemove', (event: UiohookMouseEvent) => {
-      if (!this.isTracking) return
+    // uIOhook.on('mousemove', (event: UiohookMouseEvent) => {
+    //   if (!this.isTracking) return
 
-      const now = Date.now()
-      if (now - lastMoveTime < moveThrottleMs) return
-      lastMoveTime = now
+    //   const now = Date.now()
+    //   if (now - lastMoveTime < moveThrottleMs) return
+    //   lastMoveTime = now
 
-      const mouseEvent: MouseEvent = {
-        type: 'mouse_move',
-        position: { x: event.x, y: event.y },
-        modifiers: {
-          alt: event.altKey,
-          ctrl: event.ctrlKey,
-          meta: event.metaKey,
-          shift: event.shiftKey
-        },
-        timestamp: now
-      }
+    //   const mouseEvent: MouseEvent = {
+    //     type: 'mouse_move',
+    //     position: { x: event.x, y: event.y },
+    //     modifiers: {
+    //       alt: event.altKey,
+    //       ctrl: event.ctrlKey,
+    //       meta: event.metaKey,
+    //       shift: event.shiftKey
+    //     },
+    //     timestamp: now
+    //   }
 
-      console.log('🖱️ Mouse MOVE:', {
-        position: mouseEvent.position,
-        modifiers: mouseEvent.modifiers
-      })
-      this.addEvent(mouseEvent)
-      this.emit('mouse-event', mouseEvent)
-    })
+    //   console.log('🖱️ Mouse MOVE:', {
+    //     position: mouseEvent.position,
+    //     modifiers: mouseEvent.modifiers
+    //   })
+    //   this.addEvent(mouseEvent)
+    //   this.emit('mouse-event', mouseEvent)
+    // })
 
     // Mouse wheel events
-    uIOhook.on('wheel', (event: UiohookWheelEvent) => {
-      if (!this.isTracking) return
+    // uIOhook.on('wheel', (event: UiohookWheelEvent) => {
+    //   if (!this.isTracking) return
 
-      const mouseEvent: MouseEvent = {
-        type: 'mouse_wheel',
-        position: { x: event.x, y: event.y },
-        wheelDelta: event.rotation,
-        modifiers: {
-          alt: event.altKey,
-          ctrl: event.ctrlKey,
-          meta: event.metaKey,
-          shift: event.shiftKey
-        },
-        timestamp: Date.now()
-      }
+    //   const mouseEvent: MouseEvent = {
+    //     type: 'mouse_wheel',
+    //     position: { x: event.x, y: event.y },
+    //     wheelDelta: event.rotation,
+    //     modifiers: {
+    //       alt: event.altKey,
+    //       ctrl: event.ctrlKey,
+    //       meta: event.metaKey,
+    //       shift: event.shiftKey
+    //     },
+    //     timestamp: Date.now()
+    //   }
 
-      console.log('🖱️ Mouse WHEEL:', {
-        position: mouseEvent.position,
-        wheelDelta: mouseEvent.wheelDelta,
-        modifiers: mouseEvent.modifiers
-      })
-      this.addEvent(mouseEvent)
-      this.emit('mouse-event', mouseEvent)
-    })
+    //   console.log('🖱️ Mouse WHEEL:', {
+    //     position: mouseEvent.position,
+    //     wheelDelta: mouseEvent.wheelDelta,
+    //     modifiers: mouseEvent.modifiers
+    //   })
+    //   this.addEvent(mouseEvent)
+    //   this.emit('mouse-event', mouseEvent)
+    // })
   }
 
   private mapButton(buttonCode: unknown): 'left' | 'right' | 'middle' {
