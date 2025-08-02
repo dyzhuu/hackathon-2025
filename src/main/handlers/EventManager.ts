@@ -4,16 +4,8 @@ import { keyboardHandler, KeyboardEvent } from './keyboard'
 
 export interface ActivityEvent {
   id: string
-  category: 'mouse' | 'keyboard' | 'screenshot'
-  event: MouseEvent | KeyboardEvent | ScreenshotEvent
-  timestamp: number
-}
-
-export interface ScreenshotEvent {
-  type: 'screenshot'
-  monitorId: number
-  imagePath?: string
-  imageData?: Buffer
+  category: 'mouse' | 'keyboard'
+  event: MouseEvent | KeyboardEvent
   timestamp: number
 }
 
@@ -93,10 +85,7 @@ export class EventManager extends EventEmitter {
     })
   }
 
-  private addEvent(
-    category: 'mouse' | 'keyboard' | 'screenshot',
-    event: MouseEvent | KeyboardEvent | ScreenshotEvent
-  ): void {
+  private addEvent(category: 'mouse' | 'keyboard', event: MouseEvent | KeyboardEvent): void {
     const activityEvent: ActivityEvent = {
       id: `${category}_${++this.eventCounter}`,
       category,
@@ -124,10 +113,7 @@ export class EventManager extends EventEmitter {
   }
 
   // Query methods
-  getEvents(
-    category?: 'mouse' | 'keyboard' | 'window' | 'screenshot',
-    limit?: number
-  ): ActivityEvent[] {
+  getEvents(category?: 'mouse' | 'keyboard', limit?: number): ActivityEvent[] {
     let filtered = category ? this.events.filter((e) => e.category === category) : [...this.events]
 
     if (limit && limit > 0) {
@@ -137,10 +123,7 @@ export class EventManager extends EventEmitter {
     return filtered
   }
 
-  getEventsSince(
-    timestamp: number,
-    category?: 'mouse' | 'keyboard' | 'window' | 'screenshot'
-  ): ActivityEvent[] {
+  getEventsSince(timestamp: number, category?: 'mouse' | 'keyboard'): ActivityEvent[] {
     return this.events.filter(
       (e) => e.timestamp >= timestamp && (!category || e.category === category)
     )
@@ -164,9 +147,6 @@ export class EventManager extends EventEmitter {
           break
         case 'keyboard':
           stats.keyboardEvents++
-          break
-        case 'screenshot':
-          stats.screenshotEvents++
           break
       }
 

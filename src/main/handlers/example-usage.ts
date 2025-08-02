@@ -1,8 +1,5 @@
-import { eventManager, ScreenshotEvent } from './EventManager'
+import { eventManager } from './EventManager'
 import { KeyboardEvent } from './keyboard'
-import { WindowEvent } from './application'
-import * as fs from 'fs'
-import * as path from 'path'
 
 // Example usage of the Event Manager
 async function startActivityTracking(): Promise<void> {
@@ -20,28 +17,9 @@ async function startActivityTracking(): Promise<void> {
         break
       }
 
-      case 'window': {
-        const windowEvent = event.event as WindowEvent
-        if (windowEvent.type === 'window_change') {
-          console.log(`User switched to: ${windowEvent.window?.application}`)
-        }
-        break
-      }
-
       case 'mouse': {
         // const mouseEvent = event.event as MouseEvent
         // Log significant mouse movements only
-        break
-      }
-
-      case 'screenshot': {
-        const screenshotEvent = event.event as ScreenshotEvent
-        if (screenshotEvent.imageData) {
-          // Save screenshot to file
-          const filename = `screenshot_${screenshotEvent.timestamp}.png`
-          fs.writeFileSync(path.join(process.cwd(), filename), screenshotEvent.imageData)
-          console.log(`Screenshot saved: ${filename}`)
-        }
         break
       }
     }
@@ -67,22 +45,7 @@ async function startActivityTracking(): Promise<void> {
     // Get recent keyboard events
     const recentKeyboard = eventManager.getEvents('keyboard', 10)
     console.log('Recent keyboard events:', recentKeyboard.length)
-
-    // Get current state
-    const state = eventManager.getCurrentState()
-    console.log('Current state:', state)
   }, 10000)
-
-  // Example: Take a screenshot after 5 seconds
-  setTimeout(async () => {
-    try {
-      console.log('Taking screenshot...')
-      const screenshot = await eventManager.captureScreenshot()
-      console.log('Screenshot captured from monitor:', screenshot.monitorId)
-    } catch (error) {
-      console.error('Failed to capture screenshot:', error)
-    }
-  }, 5000)
 
   // Example: Export data after 30 seconds
   setTimeout(() => {
@@ -90,10 +53,6 @@ async function startActivityTracking(): Promise<void> {
     console.log('Exported data size:', exportData.length, 'bytes')
     // You could save this to a file or send to a server
   }, 30000)
-
-  // Example: Get available monitors
-  const monitors = eventManager.getMonitors()
-  console.log('Available monitors:', monitors)
 }
 
 // Graceful shutdown
