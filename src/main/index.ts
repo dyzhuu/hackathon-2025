@@ -101,9 +101,6 @@ app.whenReady().then(() => {
   // Start tracking automatically (optional)
   eventManager.start().catch(console.error);
 
-  const clippy = createWindow();
-  //createWindow('notes')
-
   ipcMain.on('some-channel', (event, data) => {
     const note = createWindow('notes');
     clippy.show();
