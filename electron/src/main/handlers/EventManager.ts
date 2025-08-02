@@ -1,11 +1,12 @@
 import { EventEmitter } from 'events';
 import { mouseHandler, MouseEvent } from './mouse';
 import { keyboardHandler, KeyboardEvent } from './keyboard';
+import { windowHandler, WindowEvent } from './window';
 
 export interface ActivityEvent {
   id: string;
-  category: 'mouse' | 'keyboard';
-  event: MouseEvent | KeyboardEvent;
+  category: 'mouse' | 'keyboard' | 'window';
+  event: MouseEvent | KeyboardEvent | WindowEvent;
   timestamp: number;
 }
 
@@ -35,11 +36,17 @@ export interface ProcessedKeyboardEvent {
   input: string;
 }
 
+export interface ProcessedWindowEvent {
+  process_name: string;
+  window_title: string;
+}
+
 export interface WindowedEvents {
   windowStart: number;
   windowEnd: number;
   mouseEvents: ProcessedMouseEvent[];
   keyboardEvents: ProcessedKeyboardEvent[];
+  windowEvents: ProcessedWindowEvent[];
 }
 
 export class EventManager extends EventEmitter {
@@ -64,10 +71,12 @@ export class EventManager extends EventEmitter {
     // Set up event listeners
     this.setupMouseHandler();
     this.setupKeyboardHandler();
+    this.setupWindowHandler();
 
     // Start all handlers
     mouseHandler.start();
     keyboardHandler.start();
+    windowHandler.start();
 
     // Start statistics logging interval
     this.startStatsInterval();
@@ -181,6 +190,7 @@ export class EventManager extends EventEmitter {
   ): WindowedEvents {
     const mouseEvents: ProcessedMouseEvent[] = [];
     const keyboardEvents: ProcessedKeyboardEvent[] = [];
+    const windowEvents: ProcessedWindowEvent[] = [];
 
     // Separate mouse events for aggregation
     const mouseActivityEvents = events.filter((e) => e.category === 'mouse');
@@ -212,11 +222,23 @@ export class EventManager extends EventEmitter {
       }
     }
 
+    for (const event of events) {
+      if (event.category === 'window') {
+        const windowEvent = event.event as WindowEvent;
+        const processedEvent: ProcessedWindowEvent = {
+          process_name: windowEvent.active_app,
+          window_title: windowEvent.window_title
+        };
+        windowEvents.push(processedEvent);
+      }
+    }
+
     return {
       windowStart,
       windowEnd,
       mouseEvents,
-      keyboardEvents
+      keyboardEvents,
+      windowEvents
     };
   }
 
@@ -290,7 +312,16 @@ export class EventManager extends EventEmitter {
     });
   }
 
-  private addEvent(category: 'mouse' | 'keyboard', event: MouseEvent | KeyboardEvent): void {
+  private setupWindowHandler(): void {
+    windowHandler.on('window-event', (event: WindowEvent) => {
+      this.addEvent('window', event);
+    });
+  }
+
+  private addEvent(
+    category: 'mouse' | 'keyboard' | 'window',
+    event: MouseEvent | KeyboardEvent | WindowEvent
+  ): void {
     const activityEvent: ActivityEvent = {
       id: `${category}_${++this.eventCounter}`,
       category,

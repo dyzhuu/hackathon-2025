@@ -93,6 +93,10 @@ app.whenReady().then(() => {
 
     console.log('⌨️  Keyboard Events: ', windowData.keyboardEvents);
 
+    console.log('');
+
+    console.log('🖼️  Window Events: ', windowData.windowEvents);
+
     console.log('='.repeat(80) + '\n');
 
     // TODO: Send windowData to LLM service here
