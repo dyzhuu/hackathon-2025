@@ -1,6 +1,6 @@
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import clippy from './features/clippy/App';
-import notes from './features/notes/App';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom'
+import clippy from './features/clippy/App'
+import notes from './features/notes/App'
 
 export default function App(): React.ReactElement {
   return (
@@ -10,5 +10,5 @@ export default function App(): React.ReactElement {
         <Route path="/notes" element={notes()} />
       </Routes>
     </Router>
-  );
+  )
 }

@@ -2,6 +2,8 @@ import { app, shell, BrowserWindow, ipcMain, screen } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 
+import { eventManager } from './handlers/EventManager'
+
 export function createWindow(route: string = ''): BrowserWindow {
   const primaryDisplay = screen.getPrimaryDisplay()
 
@@ -67,6 +69,36 @@ app.whenReady().then(() => {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
+  // Set up IPC handlers for event tracking
+  ipcMain.handle('start-tracking', async () => {
+    try {
+      await eventManager.start()
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : String(error) }
+    }
+  })
+
+  ipcMain.handle('stop-tracking', () => {
+    eventManager.stop()
+    return { success: true }
+  })
+
+  ipcMain.handle('get-tracking-stats', () => {
+    return eventManager.getStats()
+  })
+
+  // Set up event forwarding to renderer
+  eventManager.on('activity-event', (event) => {
+    // Send to all windows
+    BrowserWindow.getAllWindows().forEach((window) => {
+      window.webContents.send('activity-event', event)
+    })
+  })
+
+  // Start tracking automatically (optional)
+  eventManager.start().catch(console.error)
+
   const clippy = createWindow()
   //createWindow('notes')
 
@@ -91,6 +123,11 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+// Clean up event tracking when app quits
+app.on('before-quit', () => {
+  eventManager.stop()
 })
 
 // In this file you can include the rest of your app's specific main process

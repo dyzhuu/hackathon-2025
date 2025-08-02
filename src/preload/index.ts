@@ -1,8 +1,26 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
-const api = {}
+const api = {
+  // Event tracking APIs
+  startTracking: () => ipcRenderer.invoke('start-tracking'),
+  stopTracking: () => ipcRenderer.invoke('stop-tracking'),
+  getTrackingStats: () => ipcRenderer.invoke('get-tracking-stats'),
+  captureScreenshot: () => ipcRenderer.invoke('capture-screenshot'),
+  getMonitors: () => ipcRenderer.invoke('get-monitors'),
+  getEvents: (category?: string, limit?: number) =>
+    ipcRenderer.invoke('get-events', category, limit),
+
+  // Event listener
+  onActivityEvent: (callback: (event: any) => void) => {
+    ipcRenderer.on('activity-event', (_, event) => callback(event))
+    // Return cleanup function
+    return () => {
+      ipcRenderer.removeAllListeners('activity-event')
+    }
+  }
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
