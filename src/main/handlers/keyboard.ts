@@ -1,63 +1,63 @@
-import { EventEmitter } from 'events'
-import { uIOhook, UiohookKey, UiohookKeyboardEvent } from 'uiohook-napi'
+import { EventEmitter } from 'events';
+import { uIOhook, UiohookKey, UiohookKeyboardEvent } from 'uiohook-napi';
 
 export interface KeyboardEvent {
-  type: 'key_down' | 'key_up'
-  key: string
-  keyCode: number
+  type: 'key_down' | 'key_up';
+  key: string;
+  keyCode: number;
   modifiers: {
-    ctrl: boolean
-    alt: boolean
-    shift: boolean
-    meta: boolean
-  }
-  timestamp: number
+    ctrl: boolean;
+    alt: boolean;
+    shift: boolean;
+    meta: boolean;
+  };
+  timestamp: number;
 }
 
 export class KeyboardHandler extends EventEmitter {
-  private isTracking: boolean = false
-  private keyStates: Map<number, boolean> = new Map()
+  private isTracking: boolean = false;
+  private keyStates: Map<number, boolean> = new Map();
 
   constructor() {
-    super()
-    this.setupUiohookListeners()
+    super();
+    this.setupUiohookListeners();
   }
 
   start(): void {
-    if (this.isTracking) return
+    if (this.isTracking) return;
 
-    this.isTracking = true
+    this.isTracking = true;
 
     try {
-      uIOhook.start()
-      console.log('🚀 Global keyboard tracking started with uiohook-napi')
-      console.log('⌨️ Keyboard events will be logged with detailed information')
+      uIOhook.start();
+      console.log('🚀 Global keyboard tracking started with uiohook-napi');
+      console.log('⌨️ Keyboard events will be logged with detailed information');
     } catch (error) {
-      console.error('❌ Failed to start uiohook-napi:', error)
-      this.isTracking = false
-      throw error
+      console.error('❌ Failed to start uiohook-napi:', error);
+      this.isTracking = false;
+      throw error;
     }
   }
 
   stop(): void {
-    if (!this.isTracking) return
+    if (!this.isTracking) return;
 
-    this.isTracking = false
+    this.isTracking = false;
 
     try {
-      uIOhook.stop()
-      console.log('Global keyboard tracking stopped')
+      uIOhook.stop();
+      console.log('Global keyboard tracking stopped');
     } catch (error) {
-      console.error('Failed to stop uiohook-napi:', error)
+      console.error('Failed to stop uiohook-napi:', error);
     }
 
-    this.keyStates.clear()
+    this.keyStates.clear();
   }
 
   private setupUiohookListeners(): void {
     // Keyboard down events
     uIOhook.on('keydown', (event: UiohookKeyboardEvent) => {
-      if (!this.isTracking) return
+      if (!this.isTracking) return;
 
       const keyboardEvent: KeyboardEvent = {
         type: 'key_down',
@@ -70,13 +70,13 @@ export class KeyboardHandler extends EventEmitter {
           meta: event.metaKey
         },
         timestamp: Date.now()
-      }
+      };
 
       // Track key states to detect held keys
-      this.keyStates.set(event.keycode, true)
+      this.keyStates.set(event.keycode, true);
 
-      this.emit('keyboard-event', keyboardEvent)
-    })
+      this.emit('keyboard-event', keyboardEvent);
+    });
   }
 
   private mapKeyCode(keycode: number): string {
@@ -181,45 +181,45 @@ export class KeyboardHandler extends EventEmitter {
       [UiohookKey.NumLock]: 'NumLock',
       [UiohookKey.ScrollLock]: 'ScrollLock',
       [UiohookKey.PrintScreen]: 'PrintScreen'
-    }
+    };
 
-    return keyMap[keycode] || `Key${keycode}`
+    return keyMap[keycode] || `Key${keycode}`;
   }
 
   // Get currently pressed keys
   getPressedKeys(): number[] {
-    return Array.from(this.keyStates.keys())
+    return Array.from(this.keyStates.keys());
   }
 
   // Check if a specific key is currently pressed
   isKeyPressed(keyCode: number): boolean {
-    return this.keyStates.has(keyCode)
+    return this.keyStates.has(keyCode);
   }
 
   // Helper method to check if a key by name is pressed
   isKeyNamePressed(keyName: string): boolean {
     for (const [keyCode] of this.keyStates) {
       if (this.mapKeyCode(keyCode) === keyName) {
-        return true
+        return true;
       }
     }
-    return false
+    return false;
   }
 
   // Helper method to format key combinations
   static formatKeyCombination(event: KeyboardEvent): string {
-    const parts: string[] = []
+    const parts: string[] = [];
 
-    if (event.modifiers.ctrl) parts.push('Ctrl')
-    if (event.modifiers.alt) parts.push('Alt')
-    if (event.modifiers.shift) parts.push('Shift')
-    if (event.modifiers.meta) parts.push('Meta')
+    if (event.modifiers.ctrl) parts.push('Ctrl');
+    if (event.modifiers.alt) parts.push('Alt');
+    if (event.modifiers.shift) parts.push('Shift');
+    if (event.modifiers.meta) parts.push('Meta');
 
-    parts.push(event.key)
+    parts.push(event.key);
 
-    return parts.join('+')
+    return parts.join('+');
   }
 }
 
 // Singleton instance
-export const keyboardHandler = new KeyboardHandler()
+export const keyboardHandler = new KeyboardHandler();
