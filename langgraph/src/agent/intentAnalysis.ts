@@ -48,7 +48,8 @@ export class IntentAnalysisAgent {
 
   constructor() {
     this.model = new ChatGoogleGenerativeAI({
-      model: "gemini-2.0-flash-001",
+      // model: "gemini-2.0-flash-001",
+      model: "gemini-2.5-pro",
       temperature: 0.1,
     });
   }
@@ -192,18 +193,6 @@ Focus analysis on:
 4. **Activity rhythm** - what does the pace and flow suggest about their current state?
 </context_understanding>
 </analysis_framework>
-
-<output_requirements>
-Your output must be a single, valid JSON object that adheres to the following structure. Do not include any explanatory text or markdown formatting outside of the JSON block.
-
-{
-  "primaryGoal": "A concise description of the user's high-level objective.",
-  "currentActivity": "A concrete description of the specific task in this session.",
-  "workflowStage": "searching | executing | reviewing | problemsolving | exploring | idle | consuming",
-  "challengeDescription": "Description of any notable friction or complexity observed, or undefined if none.",
-  "confidenceLevel": "A float between 0.0 and 1.0 representing your confidence in the analysis."
-}
-</output_requirements>
 
 <critical_guidelines>
 • Analyze TASKS and WORKFLOWS, not personal traits or capabilities

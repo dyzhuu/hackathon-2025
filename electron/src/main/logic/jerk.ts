@@ -35,8 +35,8 @@ export const moveTo = async (
 
     sticky.setPosition(cx, cy);
     const cursorPos = screen.getCursorScreenPoint();
-    if (Math.abs(cursorPos.x - cx - 64) < 64 && Math.abs(cursorPos.y - cy - 64) < 64) {
-      await mouse.setPosition(new Point(cx + 64, cy + 64));
+    if (Math.abs(cursorPos.x - cx - 100) < 100 && Math.abs(cursorPos.y - cy - 100) < 100) {
+      await mouse.setPosition(new Point(cx + 100, cy + 100));
     }
     then = now;
 

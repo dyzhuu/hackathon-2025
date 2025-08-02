@@ -6,50 +6,24 @@
  */
 
 import { z } from "zod";
-import { ActionPlan, ActionCommand, IntentAnalysis } from "./state.js";
+import { ActionPlan, IntentAnalysis, ObservationData } from "./state.js";
 
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 
 // Zod schema for action commands
 const ActionCommandSchema = z.object({
   actionName: z
-    .enum([
-      "move_cursor",
-      "show_text",
-      "play_sound",
-      "wait",
-      "speak_text",
-      "animate_sticky",
-      "show_tooltip",
-      "highlight_element",
-      "shake_window",
-      "change_cursor",
-      "show_notification",
-    ])
+    .enum(["move_cursor", "show_text", "wait", "animate_sticky", "do_nothing"])
     .describe("The specific action to execute"),
   parameters: z
     .object({
       x: z.number().optional(),
       y: z.number().optional(),
+      relative: z.boolean().optional(),
       text: z.string().optional(),
       durationMs: z.number().optional(),
-      relative: z.boolean().optional(),
       position: z.object({ x: z.number(), y: z.number() }).optional(),
-      sound_file: z.string().optional(),
-      volume: z.number().optional(),
-      voice_id: z.string().optional(),
-      rate: z.number().optional(),
       animation: z.string().optional(),
-      target_element: z.object({ x: z.number(), y: z.number() }).optional(),
-      auto_dismiss: z.boolean().optional(),
-      width: z.number().optional(),
-      height: z.number().optional(),
-      color: z.string().optional(),
-      intensity: z.number().optional(),
-      cursorType: z.string().optional(),
-      title: z.string().optional(),
-      message: z.string().optional(),
-      icon: z.string().optional(),
     })
     .describe("Parameters needed for the action"),
 });
@@ -68,7 +42,7 @@ export class PlannerAgent {
 
   constructor() {
     this.model = new ChatGoogleGenerativeAI({
-      model: "gemini-2.0-flash-001",
+      model: "gemini-2.5-flash-lite",
       temperature: 0.3, // Some creativity but mostly deterministic
     });
   }
@@ -79,6 +53,7 @@ export class PlannerAgent {
   async createPlan(
     intentAnalysis: IntentAnalysis,
     clipperMood: string,
+    worldModel: ObservationData,
   ): Promise<ActionPlan> {
     try {
       const prompt = this.buildPlanningPrompt(intentAnalysis, clipperMood);
@@ -100,8 +75,9 @@ export class PlannerAgent {
     } catch (error) {
       console.error("Planner Agent: Error creating plan", error);
 
-      // Fallback plan
-      return this.createFallbackPlan(clipperMood);
+      return {
+        actionPlan: [],
+      };
     }
   }
 
@@ -111,6 +87,7 @@ export class PlannerAgent {
   private buildPlanningPrompt(
     intentAnalysis: IntentAnalysis,
     clipperMood: string,
+    worldModel: ObservationData,
   ): string {
     return `
 You are Sticky's planning system. Create a specific, executable action plan based on the user's current state and Sticky's mood.
@@ -118,6 +95,7 @@ You are Sticky's planning system. Create a specific, executable action plan base
 ## Current Situation
 - User Intent: ${JSON.stringify(intentAnalysis, null, 2)}
 - Sticky's Mood: ${clipperMood}
+- World Model: ${JSON.stringify(worldModel, null, 2)}
 
 ## Available Actions
 1. **move_cursor**: Move the user's cursor
@@ -132,11 +110,11 @@ You are Sticky's planning system. Create a specific, executable action plan base
 4. **wait**: Pause execution
    - Parameters: {durationMs: number}
 
-5. **speak_text**: Text-to-speech
-   - Parameters: {text: string, voice_id?: string, rate?: number}
-
-6. **animate_sticky**: Animate Sticky character
+5. **animate_sticky**: Animate Sticky character
    - Parameters: {animation: string, durationMs?: number}
+
+6. **do_nothing**: Do nothing and immediately return
+   - Parameters: {} (no parameters required)
    
 
 ## Mood-Based Planning Guidelines
@@ -180,60 +158,6 @@ You are Sticky's planning system. Create a specific, executable action plan base
 
 Create a plan that matches Sticky's current mood while appropriately responding to the user's intent.
 `;
-  }
-
-  /**
-   * Create a fallback plan when the main planning fails
-   */
-  private createFallbackPlan(clipperMood: string): ActionPlan {
-    const fallbackActions: ActionCommand[] = [];
-
-    // Simple fallback based on mood
-    switch (clipperMood.toLowerCase()) {
-      case "mischievous":
-        fallbackActions.push(
-          {
-            actionName: "move_cursor",
-            parameters: { x: -5, y: 0, relative: true },
-          },
-          { actionName: "wait", parameters: { durationMs: 500 } },
-          {
-            actionName: "show_text",
-            parameters: { text: "Oops! 😏", durationMs: 2000 },
-          },
-        );
-        break;
-
-      case "bored":
-        fallbackActions.push(
-          {
-            actionName: "animate_sticky",
-            parameters: { animation: "yawn", durationMs: 2000 },
-          },
-          {
-            actionName: "show_text",
-            parameters: {
-              text: "Is it time for a break yet?",
-              durationMs: 3000,
-            },
-          },
-        );
-        break;
-
-      case "helpful":
-      default:
-        fallbackActions.push({
-          actionName: "show_text",
-          parameters: { text: "I'm here if you need help!", durationMs: 2500 },
-        });
-        break;
-    }
-
-    console.log("Planner Agent: Using fallback plan due to error");
-
-    return {
-      actionPlan: fallbackActions,
-    };
   }
 
   /**
