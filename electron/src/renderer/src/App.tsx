@@ -13,7 +13,7 @@ export default function App(): React.ReactElement {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={Sticky()} />
+        <Route path="/sticky" element={Sticky()} />
         <Route path="/notes" element={Notes()} />
       </Routes>
     </Router>

@@ -1,13 +1,17 @@
 import { app, shell, BrowserWindow, ipcMain, screen } from 'electron';
-import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
-import { eventManager, ObservationData } from './handlers/EventManager';
 import { setupIpcs } from './ipc';
-import { moveTo } from './math';
+import { join } from 'path';
+import { eventManager, ObservationData } from './handlers/EventManager';
 import { getIntendedActions } from './langgraph/functions';
+import { randomLocation, moveLinear } from './logic/movement';
 
 // Create a window
-function createWindow(route: string = ''): BrowserWindow {
+function createWindow(
+  route: string = '',
+  hasFrame: boolean = true,
+  isTransparent: boolean = false
+): BrowserWindow {
   const primaryDisplay = screen.getPrimaryDisplay();
 
   // Create the browser window.
@@ -21,14 +25,21 @@ function createWindow(route: string = ''): BrowserWindow {
     x: Math.round((primaryDisplay.workAreaSize.width - 500) * Math.random()), // chang ethis later
     y: Math.round((primaryDisplay.workAreaSize.height - 500) * Math.random() + 200),
     hiddenInMissionControl: true,
-    frame: true,
-    transparent: route == '',
+    frame: hasFrame,
+    transparent: isTransparent,
+    backgroundColor: '#00000000',
     movable: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     }
   });
+
+  if (import.meta.env.DEV && isTransparent) {
+    mainWindow.webContents.openDevTools({
+      mode: 'detach'
+    });
+  }
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
@@ -66,12 +77,14 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window);
   });
 
+  // Window creation
   const ipcContext = setupIpcs(createWindow, eventManager);
+
+  const sticky = createWindow('sticky', false, true);
+  ipcContext.setMainWindow(sticky);
+
   // Start tracking automatically (optional)
   eventManager.start().catch(console.error);
-
-  const sticky = createWindow();
-  ipcContext.setMainWindow(sticky);
 
   // Set up event forwarding to renderer
   eventManager.on('activity-event', (event) => {
@@ -83,13 +96,11 @@ app.whenReady().then(() => {
 
   //  Set up window data consumer for LLM processing
   eventManager.on('window-data', (windowData: ObservationData) => {
-    getIntendedActions({ observationData: windowData });
+    // David handle your promise rejections for this commented out stuff pls lmao
+    // getIntendedActions({ observationData: windowData });
   });
 
-  // Start tracking automatically (optional)
-  eventManager.start().catch(console.error);
-
-  // Event handling
+  // Event listeners
   ipcMain.on('create-note', (_event, data) => {
     createWindow('notes');
     sticky.show();
@@ -103,28 +114,21 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 
-  // Window movement
-  function randomLocation(): number[] {
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const position = [
-      Math.round(Math.random() * primaryDisplay.workAreaSize.width),
-      Math.round(Math.random() * primaryDisplay.workAreaSize.height)
-    ];
-    return position;
-  }
-
+  // Actions
   (async () => {
     while (true) {
-      sticky.webContents.send('move-event', 'jerk');
-      console.log('moving');
+      await new Promise((resolve) => setTimeout(resolve, 5000));
 
-      const [x, y] = randomLocation();
-      await moveTo(sticky, x, y, 'jerk');
+      sticky.webContents.send('sticky-move', 'linear');
 
-      console.log('moved to', x, y);
-      sticky.webContents.send('move-event', null);
+      const windowSize = screen.getPrimaryDisplay();
+      const [x, y] = randomLocation([
+        windowSize.workAreaSize.width,
+        windowSize.workAreaSize.height
+      ]);
+      await moveLinear(sticky, x, y);
 
-      await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait for 5 seconds before moving again
+      sticky.webContents.send('sticky-move', null);
     }
   })();
 });

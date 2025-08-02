@@ -1,52 +1,55 @@
-import sticky from '../../assets/sticky.png';
-import sticky2 from '../../assets/sticky2.png';
-import { useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect } from 'react';
+
+import clippy from '../../assets/clippy.png';
+import sticky_move_1 from '../../assets/sticky_move_1.png';
+import sticky_move_2 from '../../assets/sticky_move_2.png';
 
 function Sticky(): React.JSX.Element {
-  const [moving, setMoving] = useState<boolean>(false);
-
-  function fuck(): void {
-    const data = 'FUCK';
+  function createNote(): void {
+    const data = 'note data';
     window.electron.ipcRenderer.send('create-note', data);
   }
 
-  const animate = useCallback((): void => {
-    const animateInterval = setInterval(() => {
-      setStickyImg((prevImg) => (prevImg === sticky ? sticky2 : sticky));
-      if (!moving) {
-        clearInterval(animateInterval);
-      }
-    }, 100);
-  }, [moving]);
+  const stickyStateRef = useRef<string | null>(null);
 
-  const [stickyImg, setStickyImg] = useState<string>(sticky);
+  const [stickyImg, setStickyImg] = useState<string>(clippy);
 
   useEffect(() => {
-    const handler = (_event, value): void => {
-      if (value == null) {
-        setMoving(false);
-      } else {
-        setMoving(true);
-        animate();
-      }
-    };
+    const unsubscribeMove = window.electron.ipcRenderer.on('sticky-move', (_event, moveType) => {
+      stickyStateRef.current = moveType;
 
-    const unsubscribe = window.electron.ipcRenderer.on('move-event', handler);
+      if (moveType === null) {
+        setStickyImg(clippy);
+      } else {
+        const linearInterval = setInterval(() => {
+          if (stickyStateRef.current === null) {
+            clearInterval(linearInterval);
+          } else {
+            setStickyImg((prevImg) => {
+              if (stickyStateRef.current === 'linear') {
+                return prevImg !== sticky_move_1 ? sticky_move_1 : sticky_move_2;
+              }
+              // To add more move types images here
+              return prevImg;
+            });
+          }
+        }, 100);
+      }
+    });
 
     return () => {
-      unsubscribe();
+      unsubscribeMove();
     };
-  }, [animate]);
+  }, []);
 
   return (
-    <>
-      <img
-        src={stickyImg} // or use import if using Vite: import sticky from './assets/sticky.png'
-        alt="sticky"
-        className="w-32 h-32 object-contain select-none"
-      />
-      <button onClick={fuck}></button>
-    </>
+    <div className="m-0 w-full min-h-screen flex justify-center items-center bg-transparent">
+      <img src={stickyImg} alt="sticky" className="w-50 h-50" />
+
+      <button onClick={createNote} className="text-white">
+        Create Note
+      </button>
+    </div>
   );
 }
 
