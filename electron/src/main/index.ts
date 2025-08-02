@@ -27,6 +27,7 @@ function createWindow(
     hiddenInMissionControl: true,
     frame: hasFrame,
     transparent: isTransparent,
+    hasShadow: false,
     backgroundColor: '#00000000',
     movable: true,
     webPreferences: {
