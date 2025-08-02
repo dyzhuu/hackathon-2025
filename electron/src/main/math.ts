@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron';
 
-const velocity = 100;
-const jork = 10;
+const velocity = 1000;
+const jork = 30;
 
 const distance = ([x1, y1]: [number, number], [x2, y2]: [number, number]): number =>
   Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
