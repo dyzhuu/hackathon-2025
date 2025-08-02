@@ -1,8 +1,13 @@
 function clippy(): React.JSX.Element {
+  function fuck(): void{
+    const data = "FUCK"
+    window.electron.ipcRenderer.send("some-channel", data)
+  }
+
   return (
     <>
       <h1 className="text-blue-500">clippy</h1>
-      <a href="http://localhost:5173/notes">move</a>
+      <button onClick={fuck}>fuck</button>
     </>
   )
 }

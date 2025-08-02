@@ -1,8 +1,10 @@
 import { app, shell, BrowserWindow, ipcMain, screen } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { data } from 'react-router-dom'
+import { create } from 'domain'
 
-function createWindow(route: string = ''): void {
+export function createWindow(route: string = ''): void {
   const primaryDisplay = screen.getPrimaryDisplay()
 
   // Create the browser window.
@@ -16,8 +18,8 @@ function createWindow(route: string = ''): void {
     x: primaryDisplay.workAreaSize.width / 2,
     y: primaryDisplay.workAreaSize.height / 2,
     hiddenInMissionControl: true,
-    frame: false,
-    movable: false,
+    frame: true,
+    movable: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -48,6 +50,11 @@ function createWindow(route: string = ''): void {
   }
 }
 
+ipcMain.on('some-channel', (event, data) => {
+  createWindow('notes')
+  console.log('FUCK')
+})
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -66,7 +73,7 @@ app.whenReady().then(() => {
   ipcMain.on('ping', () => console.log('pong'))
 
   createWindow()
-  createWindow('notes')
+  //createWindow('notes')
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
