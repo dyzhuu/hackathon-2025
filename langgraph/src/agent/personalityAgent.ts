@@ -110,9 +110,11 @@ export class PersonalityAgent {
       .join(", ");
 
     const timeSinceLastChangeMinutes =
-      (new Date().getTime() -
-        this.moodHistory[this.moodHistory.length - 1].timestamp.getTime()) /
-      (1000 * 60);
+      this.moodHistory.length > 0
+        ? (new Date().getTime() -
+            this.moodHistory[this.moodHistory.length - 1].timestamp.getTime()) /
+          (1000 * 60)
+        : 0; // No previous mood changes
 
     return `
 <role>
