@@ -5,7 +5,8 @@ import { eventManager } from './handlers/EventManager';
 import { setupIpcs } from './ipc';
 import { moveTo } from './math';
 
-export function createWindow(route: string = ''): BrowserWindow {
+// Create a window
+function createWindow(route: string = ''): BrowserWindow {
   const primaryDisplay = screen.getPrimaryDisplay();
 
   // Create the browser window.
@@ -48,6 +49,8 @@ export function createWindow(route: string = ''): BrowserWindow {
   return mainWindow;
 }
 
+// Main process lifecycle
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -69,8 +72,6 @@ app.whenReady().then(() => {
   const sticky = createWindow();
   ipcContext.setMainWindow(sticky);
 
-  //createWindow('notes')
-
   // Set up event forwarding to renderer
   eventManager.on('activity-event', (event) => {
     // Send to all windows
@@ -79,35 +80,29 @@ app.whenReady().then(() => {
     });
   });
 
-  // Set up window data consumer for LLM processing
-  eventManager.on('window-data', (windowData) => {
-    console.log('\n' + '='.repeat(80));
-    console.log(
-      `🤖 LLM WINDOW DATA (${new Date(windowData.windowStart).toLocaleTimeString()} - ${new Date(windowData.windowEnd).toLocaleTimeString()})`
-    );
-    console.log('='.repeat(80));
-
-    console.log('🖱️  Mouse Events: ', windowData.mouseEvents);
-
-    console.log('');
-
-    console.log('⌨️  Keyboard Events: ', windowData.keyboardEvents);
-
-    console.log('');
-
-    console.log('🖼️  Window Events: ', windowData.windowEvents);
-
-    console.log('='.repeat(80) + '\n');
-
-    // TODO: Send windowData to LLM service here
-    // await sendToLLM(windowData)
-  });
+  // // Set up window data consumer for LLM processing
+  // eventManager.on('window-data', (windowData) => {
+  //   console.log('\n' + '='.repeat(80));
+  //   console.log(
+  //     `🤖 LLM WINDOW DATA (${new Date(windowData.windowStart).toLocaleTimeString()} - ${new Date(windowData.windowEnd).toLocaleTimeString()})`
+  //   );
+  //   console.log('='.repeat(80));
+  //   console.log('🖱️  Mouse Events: ', windowData.mouseEvents);
+  //   console.log('');
+  //   console.log('⌨️  Keyboard Events: ', windowData.keyboardEvents);
+  //   console.log('');
+  //   console.log('🖼️  Window Events: ', windowData.windowEvents);
+  //   console.log('='.repeat(80) + '\n');
+  //   TODO: Send windowData to LLM service here
+  //   await sendToLLM(windowData)
+  // });
 
   // Start tracking automatically (optional)
   eventManager.start().catch(console.error);
 
-  ipcMain.on('some-channel', (event, data) => {
-    const note = createWindow('notes');
+  // Event handling
+  ipcMain.on('create-note', (_event, data) => {
+    createWindow('notes');
     sticky.show();
     // note.setPosition(sticky.getPosition())
     console.log(data);
@@ -119,49 +114,7 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 
-  async function moveStickyTo(
-    sticky: BrowserWindow,
-    x: number,
-    y: number,
-    type: string = 'jerk'
-  ): Promise<void> {
-    let currentPos: number[];
-
-    while (
-      ((currentPos = sticky.getPosition()),
-      Math.abs(currentPos[0] - x) < 10 && Math.abs(currentPos[1] - y) < 10)
-    ) {
-      await wait(1 / 60);
-    }
-
-    return new Promise((resolve) => {
-      const currentPos = sticky.getPosition();
-
-      if (currentPos[0] == x && currentPos[1] == y) {
-        resolve();
-      }
-
-      if (type == 'jerk') {
-        let new_x;
-        let new_y;
-        if (Math.abs(currentPos[0] - x) >= 10) {
-          new_x = currentPos[0] + (currentPos[0] > x ? -10 : 10);
-        } else {
-          new_x = x;
-        }
-        if (Math.abs(currentPos[1] - y) >= 10) {
-          new_y = currentPos[1] + (currentPos[1] > y ? -10 : 10);
-        } else {
-          new_y = y;
-        }
-        sticky.setPosition(new_x, new_y);
-        setTimeout(async () => {
-          moveStickyTo(sticky, x, y, 'jerk');
-        }, 100);
-      }
-    });
-  }
-
+  // Window movement
   function randomLocation(): number[] {
     const primaryDisplay = screen.getPrimaryDisplay();
     const position = [
@@ -173,8 +126,16 @@ app.whenReady().then(() => {
 
   (async () => {
     while (true) {
+      sticky.webContents.send('move-event', 'jerk');
+      console.log('moving');
+
       const [x, y] = randomLocation();
       await moveTo(sticky, x, y, 'jerk');
+
+      console.log('moved to', x, y);
+      sticky.webContents.send('move-event', null);
+
+      await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait for 5 seconds before moving again
     }
   })();
 });

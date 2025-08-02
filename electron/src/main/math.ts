@@ -16,7 +16,7 @@ export const moveTo = async (
 
   let stickyPos: [number, number];
 
-  console.log((stickyPos = sticky.getPosition() as [number, number]), distance(stickyPos, [x, y]));
+  // console.log((stickyPos = sticky.getPosition() as [number, number]), distance(stickyPos, [x, y]));
   while (
     ((stickyPos = sticky.getPosition() as [number, number]), distance(stickyPos, [x, y]) > 10)
   ) {
@@ -32,12 +32,7 @@ export const moveTo = async (
       cy += Math.floor(Math.random() * jork) * Math.sign(Math.random() - 0.5);
     }
 
-    try {
-      sticky.setPosition(cx, cy);
-    } catch (ex) {
-      console.error(ex);
-      return;
-    }
+    sticky.setPosition(cx, cy);
 
     then = now;
 

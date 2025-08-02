@@ -1,6 +1,6 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import sticky from './features/sticky/App';
-import notes from './features/notes/App';
+import Sticky from './features/sticky/App';
+import Notes from './features/notes/App';
 import { useEffect } from 'react';
 
 export default function App(): React.ReactElement {
@@ -13,8 +13,8 @@ export default function App(): React.ReactElement {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={sticky()} />
-        <Route path="/notes" element={notes()} />
+        <Route path="/" element={Sticky()} />
+        <Route path="/notes" element={Notes()} />
       </Routes>
     </Router>
   );
