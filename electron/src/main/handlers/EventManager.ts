@@ -41,7 +41,7 @@ export interface ProcessedWindowEvent {
   window_title: string;
 }
 
-export interface WindowedEvents {
+export interface ObservationData {
   windowStart: number;
   windowEnd: number;
   mouseEvents: ProcessedMouseEvent[];
@@ -187,7 +187,7 @@ export class EventManager extends EventEmitter {
     events: ActivityEvent[],
     windowStart: number,
     windowEnd: number
-  ): WindowedEvents {
+  ): ObservationData {
     const mouseEvents: ProcessedMouseEvent[] = [];
     const keyboardEvents: ProcessedKeyboardEvent[] = [];
     const windowEvents: ProcessedWindowEvent[] = [];
