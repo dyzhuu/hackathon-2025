@@ -15,7 +15,7 @@ export class WindowHandler extends EventEmitter {
   private isTracking: boolean = false;
   private currentWindow: WindowEvent | null = null;
   private pollInterval: NodeJS.Timeout | null = null;
-  private POLL_INTERVAL_MS = 200; // Check for window changes every 200ms
+  private POLL_INTERVAL_MS = 500; // Check for window changes every 200ms
 
   constructor() {
     super();
