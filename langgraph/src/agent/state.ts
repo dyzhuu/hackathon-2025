@@ -15,33 +15,31 @@ import { Annotation, messagesStateReducer } from "@langchain/langgraph";
 
 // Type definitions for the agent system
 export interface WindowContext {
-  processName: string;
-  windowTitle: string;
-  windowGeometry?: { x: number; y: number; width: number; height: number };
+  processName: string | undefined;
+  windowTitle: string | undefined;
+  // windowGeometry?: { x: number; y: number; width: number; height: number };
 }
 
 export interface MouseEvent {
   timestamp: string;
   eventType: "move" | "click" | "scroll";
   position: { x: number; y: number };
-  button?: string;
+  input?: string;
   numberOfClicks?: number;
   // scrollDelta?: { x: number; y: number };
 }
 
 export interface KeyboardEvent {
   timestamp: string;
-  eventType: "key_down" | "key_up";
-  keyName: string;
-  modifiers: string[];
+  input: string;
 }
 
 export interface ObservationData {
   windowStartTime: string;
   windowEndTime: string;
   durationMs: number;
-  applicationContext: WindowContext;
-  screenshotUrl: string;
+  screenshotUrl?: string;
+  windowEvents: WindowContext[];
   mouseEvents: MouseEvent[];
   keyboardEvents: KeyboardEvent[];
 }

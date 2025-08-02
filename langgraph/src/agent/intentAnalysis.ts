@@ -18,9 +18,7 @@ const IntentAnalysisSchema = z.object({
     ),
   supportingEvidence: z
     .object({
-      primarySignal: z
-        .string()
-        .describe("The image in the screenshotUrl"),
+      primarySignal: z.string().describe("The image in the screenshotUrl"),
       value: z.string().describe("Quantitative measure supporting the signal"),
     })
     .optional(),
@@ -42,6 +40,7 @@ export class IntentAnalysisAgent {
   async analyzeIntent(
     observationData: ObservationData,
   ): Promise<IntentAnalysis> {
+    console.log(observationData);
     try {
       const prompt = this.buildAnalysisPrompt(observationData);
 
@@ -58,27 +57,37 @@ export class IntentAnalysisAgent {
       //   ],
       // });
 
-      const imageData = await fetch(observationData.screenshotUrl).then((res) =>
-        res.arrayBuffer(),
-      );
-      const base64Image = Buffer.from(imageData).toString("base64");
+      // const imageData = await fetch(observationData.screenshotUrl).then((res) =>
+      //   res.arrayBuffer(),
+      // );
+      // const base64Image = Buffer.from(imageData).toString("base64");
 
-      const response = await this.model
-        .withStructuredOutput(IntentAnalysisSchema, {
+      const structuredLLM = await this.model.withStructuredOutput(
+        IntentAnalysisSchema,
+        {
           name: "intentAnalysis",
-        })
-        .invoke([
+        },
+      );
+
+      let response;
+
+      if (!observationData.screenshotUrl) {
+        response = await structuredLLM.invoke(prompt);
+      } else {
+        response = await structuredLLM.invoke([
           ["system", prompt],
           [
             "user",
             [
               {
                 type: "image_url",
-                image_url: { url: `data:image/jpeg;base64,${base64Image}` },
+                // image_url: { url: `data:image/jpeg;base64,${base64Image}` },
+                image_url: { url: observationData.screenshotUrl },
               },
             ],
           ],
         ]);
+      }
 
       console.log(
         "Intent Analysis Agent: Analyzed user intent -",
@@ -110,8 +119,7 @@ export class IntentAnalysisAgent {
 Analyze the following user activity data and determine the user's intent and emotional state:
 
 ## Application Context
-- Process: ${observationData.applicationContext.processName}
-- Window: ${observationData.applicationContext.windowTitle}
+- Process and windows: ${observationData.windowEvents.map((e) => `${e.processName} - ${e.windowTitle}`).join(", ")}
 - Duration: ${observationData.durationMs}ms (${(observationData.durationMs / 1000).toFixed(1)}s)
 
 ## Activity Statistics
@@ -123,8 +131,8 @@ Analyze the following user activity data and determine the user's intent and emo
 - Time with no activity: ${stats.idleTimeMs}ms
 
 ## Detailed Events
-Mouse events: ${JSON.stringify(observationData.mouseEvents.slice(0, 10))}${observationData.mouseEvents.length > 10 ? "..." : ""}
-Keyboard events: ${JSON.stringify(observationData.keyboardEvents.slice(0, 10))}${observationData.keyboardEvents.length > 10 ? "..." : ""}
+Mouse events: ${JSON.stringify(observationData.mouseEvents)}}
+Keyboard events: ${JSON.stringify(observationData.keyboardEvents.slice(0, 10))}}
 
 ## Analysis Guidelines
 Look for patterns that indicate:
@@ -170,9 +178,7 @@ Provide a clear, human-readable assessment of what the user was doing and how th
     const averageMouseVelocity = totalTime > 0 ? totalDistance / totalTime : 0;
 
     // Keyboard statistics
-    const keyPressCount = keyboardEvents.filter(
-      (e) => e.eventType === "key_down",
-    ).length;
+    const keyPressCount = keyboardEvents.filter((e) => e.input !== "").length;
     const keyPressRate = duration > 0 ? (keyPressCount / duration) * 1000 : 0;
 
     // Calculate idle time (simplified)

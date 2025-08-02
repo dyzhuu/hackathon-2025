@@ -1,9 +1,10 @@
 import { app, shell, BrowserWindow, ipcMain, screen } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
-import { eventManager } from './handlers/EventManager';
+import { eventManager, ObservationData } from './handlers/EventManager';
 import { setupIpcs } from './ipc';
 import { moveTo } from './math';
+import { getIntendedActions } from './langgraph/functions';
 
 // Create a window
 function createWindow(route: string = '', frame: boolean = true): BrowserWindow {
@@ -80,22 +81,10 @@ app.whenReady().then(() => {
     });
   });
 
-  // // Set up window data consumer for LLM processing
-  // eventManager.on('window-data', (windowData) => {
-  //   console.log('\n' + '='.repeat(80));
-  //   console.log(
-  //     `🤖 LLM WINDOW DATA (${new Date(windowData.windowStart).toLocaleTimeString()} - ${new Date(windowData.windowEnd).toLocaleTimeString()})`
-  //   );
-  //   console.log('='.repeat(80));
-  //   console.log('🖱️  Mouse Events: ', windowData.mouseEvents);
-  //   console.log('');
-  //   console.log('⌨️  Keyboard Events: ', windowData.keyboardEvents);
-  //   console.log('');
-  //   console.log('🖼️  Window Events: ', windowData.windowEvents);
-  //   console.log('='.repeat(80) + '\n');
-  //   TODO: Send windowData to LLM service here
-  //   await sendToLLM(windowData)
-  // });
+  //  Set up window data consumer for LLM processing
+  eventManager.on('window-data', (windowData: ObservationData) => {
+    getIntendedActions({ observationData: windowData });
+  });
 
   // Start tracking automatically (optional)
   eventManager.start().catch(console.error);
