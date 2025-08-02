@@ -4,7 +4,7 @@ import { setupIpcs } from './ipc';
 import { join } from 'path';
 import { eventManager, ObservationData } from './handlers/EventManager';
 import { getIntendedActions } from './langgraph/functions';
-import { randomLocation, moveLinear } from './logic/movement';
+import { randomLocation, moveLinear, moveJerk, moveCursor } from './logic/movement';
 
 // Create a window
 function createWindow(
@@ -117,8 +117,9 @@ app.whenReady().then(() => {
 
   // Actions
   const moveActions = {
-    jerk: moveLinear,
-    linear: moveLinear
+    jerk: moveJerk,
+    linear: moveLinear,
+    cursor: moveCursor
   };
 
   (async () => {

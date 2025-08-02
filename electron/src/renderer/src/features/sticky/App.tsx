@@ -26,7 +26,10 @@ function Sticky(): React.JSX.Element {
             clearInterval(linearInterval);
           } else {
             setStickyImg((prevImg) => {
-              if (stickyStateRef.current === 'linear') {
+              if (
+                stickyStateRef.current !== null &&
+                ['linear', 'jerk', 'cursor'].includes(stickyStateRef.current)
+              ) {
                 return prevImg !== sticky_move_1 ? sticky_move_1 : sticky_move_2;
               }
               // To add more move types images here

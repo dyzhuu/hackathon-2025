@@ -41,12 +41,46 @@ export async function moveLinear(window: BrowserWindow, endX: number, endY: numb
   });
 }
 
-export const moveTo = async (
-  sticky: BrowserWindow,
-  x: number,
-  y: number,
-  type: 'jerk' | 'linear' = 'jerk'
-): Promise<void> => {
+export async function moveJerk(window: BrowserWindow, x: number, y: number): Promise<void> {
+  const velocity = 1000;
+  const jork = 30;
+
+  const distance = ([x1, y1]: [number, number], [x2, y2]: [number, number]): number =>
+    Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+
+  let then = Date.now();
+
+  let stickyPos: [number, number];
+
+  console.log((stickyPos = window.getPosition() as [number, number]), distance(stickyPos, [x, y]));
+  while (
+    ((stickyPos = window.getPosition() as [number, number]), distance(stickyPos, [x, y]) > 10)
+  ) {
+    let [cx, cy] = stickyPos;
+    const now = Date.now();
+    const delta = now - then;
+
+    cx += Math.floor(velocity * (delta / 1000) * Math.sign(x - cx));
+    cy += Math.floor(velocity * (delta / 1000) * Math.sign(y - cy));
+
+    // Random jerk effect
+    cx += Math.floor(Math.random() * jork) * Math.sign(Math.random() - 0.5);
+    cy += Math.floor(Math.random() * jork) * Math.sign(Math.random() - 0.5);
+
+    try {
+      window.setPosition(cx, cy);
+    } catch (ex) {
+      console.error(ex);
+      return;
+    }
+
+    then = now;
+
+    await new Promise((res) => setTimeout(res, 1_000 / 60));
+  }
+}
+
+export async function moveCursor(sticky: BrowserWindow, x: number, y: number): Promise<void> {
   const velocity = 1000;
   const jork = 30;
 
@@ -68,7 +102,8 @@ export const moveTo = async (
     cx += Math.floor(velocity * (delta / 1000) * Math.sign(x - cx));
     cy += Math.floor(velocity * (delta / 1000) * Math.sign(y - cy));
 
-    if (type === 'jerk') {
+    // Randomly apply jerk effect with 50% chance
+    if (Math.random() < 0.5) {
       cx += Math.floor(Math.random() * jork) * Math.sign(Math.random() - 0.5);
       cy += Math.floor(Math.random() * jork) * Math.sign(Math.random() - 0.5);
     }
@@ -82,4 +117,4 @@ export const moveTo = async (
 
     await new Promise((res) => setTimeout(res, 1_000 / 60));
   }
-};
+}
