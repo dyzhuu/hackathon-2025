@@ -21,7 +21,7 @@ export interface WindowContext {
 }
 
 export interface MouseEvent {
-  timestamp: string;
+  timestamp: number;
   eventType: "move" | "click" | "scroll";
   position: { x: number; y: number };
   input?: string;
@@ -30,8 +30,39 @@ export interface MouseEvent {
 }
 
 export interface KeyboardEvent {
-  timestamp: string;
+  timestamp: number;
   input: string;
+}
+
+export interface MouseMovementSummary {
+  totalDistance: number;
+  averageVelocity: number;
+  maxVelocity: number;
+  directionalChanges: number;
+  movementVariance: number;
+  moveCount: number;
+}
+
+export interface ScrollSummary {
+  totalScrollDelta: number;
+  scrollCount: number;
+  averageScrollAmount: number;
+  scrollDirection: "up" | "down" | "mixed";
+}
+
+export interface ClickSummary {
+  totalClicks: number;
+  clickRate: number;
+  doubleClicks: number;
+  rightClicks: number;
+  leftClicks: number;
+}
+
+export interface MouseData {
+  events: MouseEvent[];
+  movementSummary: MouseMovementSummary;
+  scrollSummary: ScrollSummary;
+  clickSummary: ClickSummary;
 }
 
 export interface ObservationData {
@@ -40,16 +71,23 @@ export interface ObservationData {
   durationMs: number;
   screenshotUrl?: string;
   windowEvents: WindowContext[];
-  mouseEvents: MouseEvent[];
+  mouseData: MouseData;
   keyboardEvents: KeyboardEvent[];
 }
 
 export interface IntentAnalysis {
-  userIntent: string;
-  supportingEvidence?: {
-    primarySignal: string;
-    value: string;
-  };
+  primaryGoal: string;
+  currentActivity: string;
+  workflowStage:
+    | "searching"
+    | "executing"
+    | "reviewing"
+    | "problemsolving"
+    | "exploring"
+    | "idle"
+    | "consuming";
+  challengeDescription?: string;
+  confidenceLevel: number;
 }
 
 export interface PersonalityState {

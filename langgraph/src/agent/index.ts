@@ -5,14 +5,11 @@
  * and provides convenience functions for starting the system.
  */
 
-import { configureObservationAPI } from "./graph.js";
-
 // Export the main graph and utility functions
 export {
   graph,
   runStickyObservationCycle,
   startContinuousMonitoring,
-  configureObservationAPI,
   runWithObservationData,
 } from "./graph.js";
 
@@ -30,12 +27,6 @@ export function setupEnvironment() {
   // Check for required environment variables
   const requiredVars = ["OPENAI_API_KEY"];
   const missing = requiredVars.filter((varName) => !process.env[varName]);
-
-  configureObservationAPI({
-    endpoint: "observation",
-    apiKey: process.env.OBSERVATION_API_KEY,
-    timeout: 10000,
-  });
 
   if (missing.length > 0) {
     console.warn("⚠️  Missing environment variables:", missing.join(", "));

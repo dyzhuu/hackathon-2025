@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { uIOhook, UiohookMouseEvent } from 'uiohook-napi';
+import { uIOhook, UiohookMouseEvent, UiohookWheelEvent } from 'uiohook-napi';
 
 export interface MouseEvent {
   eventType: 'move' | 'click' | 'scroll';
@@ -14,12 +14,26 @@ export interface MouseEvent {
   };
   clicks?: number;
   timestamp: number;
+  // Additional data for movement analysis
+  velocity?: number;
+  distance?: number;
+  direction?: number; // angle in radians
 }
 
 export class MouseHandler extends EventEmitter {
   private isTracking: boolean = false;
   private events: MouseEvent[] = [];
   private readonly maxEvents: number = 10000; // Prevent memory overflow
+
+  // Movement tracking for aggregation
+  private lastPosition: { x: number; y: number } | null = null;
+  private lastMoveTime: number = 0;
+  private readonly moveThrottleMs: number = 100; // Emit move events every 100ms
+
+  // Scroll tracking for aggregation
+  private lastScrollTime: number = 0;
+  private readonly scrollThrottleMs: number = 150; // Emit scroll events every 150ms
+  private pendingScrollDelta: number = 0;
 
   constructor() {
     super();
@@ -121,62 +135,97 @@ export class MouseHandler extends EventEmitter {
     //   this.emit('mouse-event', mouseEvent)
     // })
 
-    // Mouse move events (throttled to prevent overwhelming)
-    // let lastMoveTime = 0
-    // const moveThrottleMs = 50 // Only emit move events every 50ms
+    // Mouse move events (throttled and aggregated to prevent overwhelming)
+    uIOhook.on('mousemove', (event: UiohookMouseEvent) => {
+      if (!this.isTracking) return;
 
-    // uIOhook.on('mousemove', (event: UiohookMouseEvent) => {
-    //   if (!this.isTracking) return
+      const now = Date.now();
+      const currentPosition = { x: event.x, y: event.y };
 
-    //   const now = Date.now()
-    //   if (now - lastMoveTime < moveThrottleMs) return
-    //   lastMoveTime = now
+      // Throttle move events and calculate movement statistics
+      if (now - this.lastMoveTime >= this.moveThrottleMs) {
+        let velocity = 0;
+        let distance = 0;
+        let direction = 0;
 
-    //   const mouseEvent: MouseEvent = {
-    //     type: 'mouse_move',
-    //     position: { x: event.x, y: event.y },
-    //     modifiers: {
-    //       alt: event.altKey,
-    //       ctrl: event.ctrlKey,
-    //       meta: event.metaKey,
-    //       shift: event.shiftKey
-    //     },
-    //     timestamp: now
-    //   }
+        if (this.lastPosition && this.lastMoveTime > 0) {
+          // Calculate distance moved
+          distance = Math.sqrt(
+            Math.pow(currentPosition.x - this.lastPosition.x, 2) +
+            Math.pow(currentPosition.y - this.lastPosition.y, 2)
+          );
 
-    //   console.log('🖱️ Mouse MOVE:', {
-    //     position: mouseEvent.position,
-    //     modifiers: mouseEvent.modifiers
-    //   })
-    //   this.addEvent(mouseEvent)
-    //   this.emit('mouse-event', mouseEvent)
-    // })
+          // Calculate velocity (pixels per millisecond)
+          const timeDiff = now - this.lastMoveTime;
+          velocity = timeDiff > 0 ? distance / timeDiff : 0;
 
-    // Mouse wheel events
-    // uIOhook.on('wheel', (event: UiohookWheelEvent) => {
-    //   if (!this.isTracking) return
+          // Calculate direction (angle in radians)
+          if (distance > 0) {
+            direction = Math.atan2(
+              currentPosition.y - this.lastPosition.y,
+              currentPosition.x - this.lastPosition.x
+            );
+          }
+        }
 
-    //   const mouseEvent: MouseEvent = {
-    //     type: 'mouse_wheel',
-    //     position: { x: event.x, y: event.y },
-    //     wheelDelta: event.rotation,
-    //     modifiers: {
-    //       alt: event.altKey,
-    //       ctrl: event.ctrlKey,
-    //       meta: event.metaKey,
-    //       shift: event.shiftKey
-    //     },
-    //     timestamp: Date.now()
-    //   }
+        const mouseEvent: MouseEvent = {
+          eventType: 'move',
+          position: currentPosition,
+          modifiers: {
+            alt: event.altKey,
+            ctrl: event.ctrlKey,
+            meta: event.metaKey,
+            shift: event.shiftKey
+          },
+          timestamp: now,
+          velocity,
+          distance,
+          direction
+        };
 
-    //   console.log('🖱️ Mouse WHEEL:', {
-    //     position: mouseEvent.position,
-    //     wheelDelta: mouseEvent.wheelDelta,
-    //     modifiers: mouseEvent.modifiers
-    //   })
-    //   this.addEvent(mouseEvent)
-    //   this.emit('mouse-event', mouseEvent)
-    // })
+        this.addEvent(mouseEvent);
+        this.emit('mouse-event', mouseEvent);
+
+        this.lastPosition = currentPosition;
+        this.lastMoveTime = now;
+      } else {
+        // Just update position for next calculation
+        this.lastPosition = currentPosition;
+      }
+    });
+
+    // Mouse wheel events (aggregated to reduce noise)
+    uIOhook.on('wheel', (event: UiohookWheelEvent) => {
+      if (!this.isTracking) return;
+
+      const now = Date.now();
+
+      // Accumulate scroll delta
+      this.pendingScrollDelta += event.rotation || 0;
+
+      // Only emit aggregated scroll events at intervals
+      if (now - this.lastScrollTime >= this.scrollThrottleMs) {
+        const mouseEvent: MouseEvent = {
+          eventType: 'scroll',
+          position: { x: event.x, y: event.y },
+          wheelDelta: this.pendingScrollDelta,
+          modifiers: {
+            alt: event.altKey,
+            ctrl: event.ctrlKey,
+            meta: event.metaKey,
+            shift: event.shiftKey
+          },
+          timestamp: now
+        };
+
+        this.addEvent(mouseEvent);
+        this.emit('mouse-event', mouseEvent);
+
+        // Reset accumulation
+        this.pendingScrollDelta = 0;
+        this.lastScrollTime = now;
+      }
+    });
   }
 
   private mapButton(buttonCode: unknown): 'left' | 'right' | 'middle' {

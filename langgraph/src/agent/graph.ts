@@ -3,7 +3,7 @@
  *
  * This implements the Conductor agent that orchestrates the 6-agent system:
  * START -> Intent Analysis -> Personality Agent -> Planner -> Response -> END
- * 
+ *
  * The workflow starts with intent analysis receiving observationData from API/SDK calls,
  * then flows through personality updates, planning, and action execution.
  */
@@ -69,7 +69,7 @@ const updatePersonality = async (
     }
 
     const personalityState = await personalityAgent.updatePersonality(
-      state.intentAnalysis.userIntent,
+      state.intentAnalysis,
     );
 
     return {
@@ -103,7 +103,7 @@ const createPlan = async (
     }
 
     const actionPlan = await plannerAgent.createPlan(
-      state.intentAnalysis.userIntent,
+      state.intentAnalysis,
       state.personalityState.clipperMood,
     );
 

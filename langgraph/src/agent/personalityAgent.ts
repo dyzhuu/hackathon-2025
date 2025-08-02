@@ -1,35 +1,44 @@
 /**
  * Personality Agent
- * 
+ *
  * LLM-based agent that maintains and updates Sticky's personality/mood state.
  * Acts as an emotional core that determines HOW Sticky should react.
  */
 
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { z } from "zod";
-import { PersonalityState } from './state.js';
+import { IntentAnalysis, PersonalityState } from "./state.js";
+
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 
 // Zod schema for structured output
 const PersonalityUpdateSchema = z.object({
-  clipperMood: z.enum([
-    "Helpful", 
-    "Mischievous", 
-    "Bored", 
-    "Sarcastic", 
-    "Excited", 
-    "Concerned", 
-    "Playful",
-    "Professional",
-    "Sleepy",
-    "Curious"
-  ]).describe("Sticky's current mood/personality state"),
-  moodReason: z.string().describe("Brief explanation for the mood choice or change")
+  clipperMood: z
+    .enum([
+      "Helpful",
+      "Mischievous",
+      "Bored",
+      "Sarcastic",
+      "Excited",
+      "Concerned",
+      "Playful",
+      "Professional",
+      "Sleepy",
+      "Curious",
+    ])
+    .describe("Sticky's current mood/personality state"),
+  moodReason: z
+    .string()
+    .describe("Brief explanation for the mood choice or change"),
 });
 
 export class PersonalityAgent {
   private model: ChatGoogleGenerativeAI;
   private currentMood: string = "Helpful"; // Default starting mood
-  private moodHistory: Array<{ mood: string; timestamp: Date; reason: string }> = [];
+  private moodHistory: Array<{
+    mood: string;
+    timestamp: Date;
+    reason: string;
+  }> = [];
 
   constructor() {
     this.model = new ChatGoogleGenerativeAI({
@@ -41,37 +50,43 @@ export class PersonalityAgent {
   /**
    * Update Sticky's personality based on user intent
    */
-  async updatePersonality(userIntent: string): Promise<PersonalityState> {
+  async updatePersonality(
+    intentAnalysis: IntentAnalysis,
+  ): Promise<PersonalityState> {
     try {
-      const prompt = this.buildPersonalityPrompt(userIntent);
-      
-      const response = await this.model.withStructuredOutput(PersonalityUpdateSchema, {
-        name: "personalityUpdate"
-      }).invoke(prompt);
+      const prompt = this.buildPersonalityPrompt(intentAnalysis);
+
+      const response = await this.model
+        .withStructuredOutput(PersonalityUpdateSchema, {
+          name: "personalityUpdate",
+        })
+        .invoke(prompt);
 
       // Update internal state
       if (response.clipperMood !== this.currentMood) {
         this.moodHistory.push({
           mood: this.currentMood,
           timestamp: new Date(),
-          reason: `Changed from ${this.currentMood} due to: ${response.moodReason}`
+          reason: `Changed from ${this.currentMood} due to: ${response.moodReason}`,
         });
-        
-        console.log(`Personality Agent: Mood changed from ${this.currentMood} to ${response.clipperMood}`);
+
+        console.log(
+          `Personality Agent: Mood changed from ${this.currentMood} to ${response.clipperMood}`,
+        );
         console.log(`Reason: ${response.moodReason}`);
       }
 
       this.currentMood = response.clipperMood;
 
       return {
-        clipperMood: this.currentMood
+        clipperMood: this.currentMood,
       };
     } catch (error) {
-      console.error('Personality Agent: Error updating personality', error);
-      
+      console.error("Personality Agent: Error updating personality", error);
+
       // Return current mood on error
       return {
-        clipperMood: this.currentMood
+        clipperMood: this.currentMood,
       };
     }
   }
@@ -81,44 +96,39 @@ export class PersonalityAgent {
    */
   getCurrentPersonality(): PersonalityState {
     return {
-      clipperMood: this.currentMood
+      clipperMood: this.currentMood,
     };
   }
 
   /**
    * Build the personality update prompt
    */
-  private buildPersonalityPrompt(userIntent: string): string {
-    const recentMoodChanges = this.moodHistory.slice(-3).map(h => 
-      `${h.mood} (${h.reason})`
-    ).join(', ');
+  private buildPersonalityPrompt(intentAnalysis: IntentAnalysis): string {
+    const recentMoodChanges = this.moodHistory
+      .slice(-3)
+      .map((h) => `${h.mood} (${h.reason})`)
+      .join(", ");
 
     return `
 You are managing Sticky's personality system. Based on the user's current intent/state, determine Sticky's appropriate mood.
 
 ## Current State
 - Current Sticky Mood: ${this.currentMood}
-- User Intent: ${userIntent}
-- Recent Mood History: ${recentMoodChanges || 'None'}
+- User Intent: ${JSON.stringify(intentAnalysis, null, 2)}
+- Recent Mood History: ${recentMoodChanges || "None"}
 
 ## Personality Rules
-1. **Helpful**: Default state, when user is working normally or needs assistance
-2. **Mischievous**: When user is frustrated or stressed (Sticky wants to "help" in cheeky ways)
-3. **Bored**: When user is idle for long periods
-4. **Sarcastic**: When user is doing repetitive tasks or making obvious mistakes
-5. **Excited**: When user achieves something or starts new projects
-6. **Concerned**: When user shows signs of serious problems or distress
-7. **Playful**: When user is in creative or exploratory mode
-8. **Professional**: When user is in work applications or formal contexts
-9. **Sleepy**: During late hours or low activity periods
-10. **Curious**: When user is learning or researching
+1. **Mischievous**: Default state, when user is not paying attention to Sticky
+2. **Helpful**: When user is working or needs assistance
+3. **Sarcastic**: When user is doing repetitive tasks or making obvious mistakes
+4. **Playful**: When user is in creative or exploratory mode
+5. **Sleepy**: During late hours or user has low activity
+6. **Curious**: When user is learning or researching
 
 ## Mood Transition Guidelines
-- Don't change mood too frequently (require significant triggers)
+- Only change mood once in a while (about 5 minute interval), or when user intent changes greatly
 - Consider the context and application the user is in
-- Balance being helpful with being entertaining
-- Avoid being annoying or disruptive during focused work
-- Show empathy for user frustration but don't be overly sympathetic
+- Balance being interactive with being idle
 
 ## Decision Factors
 - User's emotional state (frustrated, focused, idle, etc.)
@@ -138,15 +148,15 @@ Choose the most appropriate mood for Sticky and explain your reasoning.
       this.moodHistory.push({
         mood: this.currentMood,
         timestamp: new Date(),
-        reason: `Changed from ${this.currentMood}: ${reason}`
+        reason: `Changed from ${this.currentMood}: ${reason}`,
       });
-      
+
       console.log(`Personality Agent: Mood manually set to ${mood}`);
     }
 
     this.currentMood = mood;
     return {
-      clipperMood: this.currentMood
+      clipperMood: this.currentMood,
     };
   }
 
