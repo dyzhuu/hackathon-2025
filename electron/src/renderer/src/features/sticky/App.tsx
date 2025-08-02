@@ -11,7 +11,7 @@ function sticky(): React.JSX.Element {
       <img
         src={clippiy} // or use import if using Vite: import sticky from './assets/sticky.png'
         alt="sticky"
-        className="w-32 h-32 object-contain"
+        className="w-32 h-32 object-contain select-none"
       />
       <button onClick={fuck}></button>
     </>
