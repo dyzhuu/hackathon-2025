@@ -34,10 +34,13 @@ export const setupIpcs = (
   });
 
   ipcMain.on('some-channel', (_event, data) => {
-    createWindow('notes'); // Note window created but not stored
-    const sticky = createWindow('sticky');
-    sticky.show();
+    mainWindow?.show();
     // TODO: Position note relative to sticky
+    const pos = mainWindow?.getPosition();
+    if (pos) {
+      const note = createWindow('notes'); // Note window created but not stored
+      note.setPosition(pos[0] + 100, pos[1] - 50); // Position note relative to main window
+    }
     console.log(data);
   });
 
