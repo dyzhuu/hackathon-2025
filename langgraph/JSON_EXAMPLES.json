@@ -9,7 +9,7 @@
         "windowTitle": "Visual Studio Code - src/components/UserProfile.tsx",
         "windowGeometry": { "x": 0, "y": 0, "width": 1920, "height": 1080 }
       },
-      "screenshotPath": "/screenshots/vscode_coding.png",
+      "screenshotUrl": "/screenshots/vscode_coding.png",
       "mouseEvents": [
         {
           "timestamp": "2024-01-15T14:30:10.000Z",
@@ -50,7 +50,7 @@
         "processName": "finder",
         "windowTitle": "Finder - Downloads"
       },
-      "screenshotPath": "/screenshots/finder_frustration.png",
+      "screenshotUrl": "/screenshots/finder_frustration.png",
       "mouseEvents": [
         {
           "timestamp": "2024-01-15T16:20:05.000Z",
@@ -104,7 +104,7 @@
         "processName": "safari",
         "windowTitle": "Safari - New Tab"
       },
-      "screenshotPath": "/screenshots/safari_idle.png",
+      "screenshotUrl": "/screenshots/safari_idle.png",
       "mouseEvents": [
         {
           "timestamp": "2024-01-15T13:46:30.000Z",
@@ -137,7 +137,7 @@
         "processName": "chrome",
         "windowTitle": "Google Chrome - New Tab"
       },
-      "screenshotPath": "/screenshots/simple.png",
+      "screenshotUrl": "/screenshots/simple.png",
       "mouseEvents": [
         {
           "timestamp": "2024-01-15T12:00:30.000Z",
@@ -171,6 +171,6 @@
       "headers": "-H 'Content-Type: application/json'",
       "data": "Use any of the examples above as the JSON body"
     },
-    "example_curl": "curl -X POST http://localhost:3000/api/clippy/analyze -H 'Content-Type: application/json' -d '{\"windowStartTime\":\"2024-01-15T12:00:00.000Z\",\"windowEndTime\":\"2024-01-15T12:01:00.000Z\",\"durationMs\":60000,\"applicationContext\":{\"processName\":\"chrome\",\"windowTitle\":\"Google Chrome\"},\"screenshotPath\":\"/screenshots/test.png\",\"mouseEvents\":[{\"timestamp\":\"2024-01-15T12:00:30.000Z\",\"eventType\":\"click\",\"position\":{\"x\":400,\"y\":300},\"button\":\"left\",\"numberOfClicks\":1}],\"keyboardEvents\":[{\"timestamp\":\"2024-01-15T12:00:35.000Z\",\"eventType\":\"key_down\",\"keyName\":\"h\",\"modifiers\":[]}]}'"
+    "example_curl": "curl -X POST http://localhost:3000/api/clippy/analyze -H 'Content-Type: application/json' -d '{\"windowStartTime\":\"2024-01-15T12:00:00.000Z\",\"windowEndTime\":\"2024-01-15T12:01:00.000Z\",\"durationMs\":60000,\"applicationContext\":{\"processName\":\"chrome\",\"windowTitle\":\"Google Chrome\"},\"screenshotUrl\":\"/screenshots/test.png\",\"mouseEvents\":[{\"timestamp\":\"2024-01-15T12:00:30.000Z\",\"eventType\":\"click\",\"position\":{\"x\":400,\"y\":300},\"button\":\"left\",\"numberOfClicks\":1}],\"keyboardEvents\":[{\"timestamp\":\"2024-01-15T12:00:35.000Z\",\"eventType\":\"key_down\",\"keyName\":\"h\",\"modifiers\":[]}]}'"
   }
 }

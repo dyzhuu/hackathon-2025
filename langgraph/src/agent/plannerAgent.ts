@@ -24,7 +24,29 @@ const ActionCommandSchema = z.object({
     "change_cursor",
     "show_notification"
   ]).describe("The specific action to execute"),
-  parameters: z.record(z.any()).describe("Parameters needed for the action")
+  parameters: z.object({
+    x: z.number().optional(),
+    y: z.number().optional(),
+    text: z.string().optional(),
+    durationMs: z.number().optional(),
+    relative: z.boolean().optional(),
+    position: z.object({ x: z.number(), y: z.number() }).optional(),
+    sound_file: z.string().optional(),
+    volume: z.number().optional(),
+    voice_id: z.string().optional(),
+    rate: z.number().optional(),
+    animation: z.string().optional(),
+    target_element: z.object({ x: z.number(), y: z.number() }).optional(),
+    auto_dismiss: z.boolean().optional(),
+    width: z.number().optional(),
+    height: z.number().optional(),
+    color: z.string().optional(),
+    intensity: z.number().optional(),
+    cursorType: z.string().optional(),
+    title: z.string().optional(),
+    message: z.string().optional(),
+    icon: z.string().optional(),
+  }).describe("Parameters needed for the action")
 });
 
 const ActionPlanSchema = z.object({

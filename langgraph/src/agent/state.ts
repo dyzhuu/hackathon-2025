@@ -41,7 +41,7 @@ export interface ObservationData {
   windowEndTime: string;
   durationMs: number;
   applicationContext: WindowContext;
-  screenshotPath: string;
+  screenshotUrl: string;
   mouseEvents: MouseEvent[];
   keyboardEvents: KeyboardEvent[];
 }

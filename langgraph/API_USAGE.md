@@ -56,7 +56,7 @@ const observationData = {
     processName: 'vscode',
     windowTitle: 'Visual Studio Code - project.ts'
   },
-  screenshotPath: '/screenshots/vscode_2024-01-15_10-30-00.png',
+  screenshotUrl: '/screenshots/vscode_2024-01-15_10-30-00.png',
   mouseEvents: [
     {
       timestamp: '2024-01-15T10:30:01.000Z',
@@ -96,7 +96,7 @@ interface ObservationData {
       height: number;
     };
   };
-  screenshotPath: string;         // Path to screenshot file
+  screenshotUrl: string;         // Path to screenshot file
   mouseEvents: MouseEvent[];      // Array of mouse events
   keyboardEvents: KeyboardEvent[]; // Array of keyboard events
 }
