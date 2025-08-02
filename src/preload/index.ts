@@ -1,6 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
 
+type Platform = 'aix' | 'darwin' | 'freebsd' | 'linux' | 'openbsd' | 'sunos' | 'win32';
+
 // Custom APIs for renderer
 const api = {
   // Event tracking APIs
@@ -9,7 +11,7 @@ const api = {
   getTrackingStats: () => ipcRenderer.invoke('get-tracking-stats'),
   captureScreenshot: () => ipcRenderer.invoke('capture-screenshot'),
   getMonitors: () => ipcRenderer.invoke('get-monitors'),
-  getPlatform: (): Promise<string> => ipcRenderer.invoke('platform'),
+  getPlatform: (): Promise<Platform> => ipcRenderer.invoke('platform'),
   getEvents: (category?: string, limit?: number) =>
     ipcRenderer.invoke('get-events', category, limit),
 
