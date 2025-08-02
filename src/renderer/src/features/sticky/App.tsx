@@ -1,6 +1,6 @@
 import clippiy from '../../assets/clippy.png'
 
-function clippy(): React.JSX.Element {
+function sticky(): React.JSX.Element {
   function fuck(): void{
     const data = "FUCK"
     window.electron.ipcRenderer.send("some-channel", data)
@@ -9,13 +9,13 @@ function clippy(): React.JSX.Element {
   return (
     <>
       <img
-        src={clippiy} // or use import if using Vite: import clippy from './assets/clippy.png'
-        alt="clippy"
+        src={clippiy} // or use import if using Vite: import sticky from './assets/sticky.png'
+        alt="sticky"
         className="w-32 h-32 object-contain"
       />
-      <button onClick={fuck}>fuck</button>
+      <button onClick={fuck}></button>
     </>
   )
 }
 
-export default clippy
+export default sticky

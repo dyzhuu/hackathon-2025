@@ -4,21 +4,25 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 
 import { eventManager } from './handlers/EventManager'
 
+const WINDOW_WIDTH = 300
+const WINDOW_HEIGHT = 300
+
 export function createWindow(route: string = ''): BrowserWindow {
   const primaryDisplay = screen.getPrimaryDisplay()
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 300,
-    height: 300,
+    width: WINDOW_WIDTH,
+    height: WINDOW_HEIGHT,
     show: true,
     resizable: false,
     autoHideMenuBar: true,
     alwaysOnTop: true,
-    x: Math.round((primaryDisplay.workAreaSize.width - 300) * Math.random()),
-    y: Math.round((primaryDisplay.workAreaSize.height - 300) * Math.random()),
+    x: Math.round((primaryDisplay.workAreaSize.width - 500) * Math.random()), // chang ethis later
+    y: Math.round((primaryDisplay.workAreaSize.height - 500) * Math.random() + 200),
     hiddenInMissionControl: true,
     frame: true,
+    transparent: route == '',
     movable: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -26,6 +30,7 @@ export function createWindow(route: string = ''): BrowserWindow {
     }
   })
 
+  // Uncomment this for dev logs
   // if (import.meta.env.DEV) {
   //   mainWindow.webContents.openDevTools({
   //     mode: 'detach'
@@ -99,13 +104,14 @@ app.whenReady().then(() => {
   // Start tracking automatically (optional)
   eventManager.start().catch(console.error)
 
-  const clippy = createWindow()
+  const sticky = createWindow()
   //createWindow('notes')
 
   ipcMain.on('some-channel', (event, data) => {
     const note = createWindow('notes')
-    clippy.show()
-    // note.setPosition(clippy.getPosition())
+    sticky.show()
+    const pos = sticky.getPosition()
+    note.setPosition(pos[0] + 200, pos[1] - 200)
     console.log(data)
   })
 
@@ -114,6 +120,54 @@ app.whenReady().then(() => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+
+  async function moveStickyTo(
+    clippy: BrowserWindow,
+    x: number,
+    y: number,
+    type: string = 'jerk'
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      const currentPos = clippy.getPosition()
+
+      if (currentPos[0] == x && currentPos[1] == y) {
+        resolve()
+      }
+
+      if (type == 'jerk') {
+        let new_x
+        let new_y
+        if (Math.abs(currentPos[0] - x) >= 10) {
+          new_x = currentPos[0] + (currentPos[0] > x ? -10 : 10)
+        } else {
+          new_x = x
+        }
+        if (Math.abs(currentPos[1] - y) >= 10) {
+          new_y = currentPos[1] + (currentPos[1] > y ? -10 : 10)
+        } else {
+          new_y = y
+        }
+        clippy.setPosition(new_x, new_y)
+        setTimeout(async () => {
+          moveStickyTo(clippy, x, y, 'jerk')
+        }, 100)
+      }
+    })
+  }
+
+  function randomLocation(): number[] {
+    const primaryDisplay = screen.getPrimaryDisplay()
+    const position = [
+      Math.round(Math.random() * primaryDisplay.workAreaSize.width),
+      Math.round(Math.random() * primaryDisplay.workAreaSize.height)
+    ]
+    return position
+  }
+
+  setInterval(async () => {
+    const loc = randomLocation()
+    await moveStickyTo(sticky, loc[0], loc[1], 'jerk')
+  }, 1000)
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common

@@ -1,5 +1,5 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
-import clippy from './features/clippy/App'
+import clippy from './features/sticky/App'
 import notes from './features/notes/App'
 
 export default function App(): React.ReactElement {

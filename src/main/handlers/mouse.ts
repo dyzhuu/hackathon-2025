@@ -33,8 +33,8 @@ export class MouseHandler extends EventEmitter {
 
     try {
       uIOhook.start()
-      console.log('🚀 Global mouse tracking started with uiohook-napi')
-      console.log('🎯 Mouse events will be logged with detailed information')
+      // console.log('🚀 Global mouse tracking started with uiohook-napi')
+      // console.log('🎯 Mouse events will be logged with detailed information')
     } catch (error) {
       console.error('❌ Failed to start uiohook-napi:', error)
       this.isTracking = false
@@ -49,7 +49,7 @@ export class MouseHandler extends EventEmitter {
 
     try {
       uIOhook.stop()
-      console.log('Global mouse tracking stopped')
+      // console.log('Global mouse tracking stopped')
     } catch (error) {
       console.error('Failed to stop uiohook-napi:', error)
     }
@@ -74,12 +74,12 @@ export class MouseHandler extends EventEmitter {
         timestamp: Date.now()
       }
 
-      console.log('🖱️ Mouse CLICK:', {
-        position: mouseEvent.position,
-        button: mouseEvent.button,
-        clicks: mouseEvent.clicks,
-        modifiers: mouseEvent.modifiers
-      })
+      // console.log('🖱️ Mouse CLICK:', {
+      //   position: mouseEvent.position,
+      //   button: mouseEvent.button,
+      //   clicks: mouseEvent.clicks,
+      //   modifiers: mouseEvent.modifiers
+      // })
       this.addEvent(mouseEvent)
       this.emit('mouse-event', mouseEvent)
     })
@@ -102,11 +102,11 @@ export class MouseHandler extends EventEmitter {
         timestamp: Date.now()
       }
 
-      console.log('🖱️ Mouse DOWN:', {
-        position: mouseEvent.position,
-        button: mouseEvent.button,
-        modifiers: mouseEvent.modifiers
-      })
+      // console.log('🖱️ Mouse DOWN:', {
+      //   position: mouseEvent.position,
+      //   button: mouseEvent.button,
+      //   modifiers: mouseEvent.modifiers
+      // })
       this.addEvent(mouseEvent)
       this.emit('mouse-event', mouseEvent)
     })
@@ -129,11 +129,11 @@ export class MouseHandler extends EventEmitter {
         timestamp: Date.now()
       }
 
-      console.log('🖱️ Mouse UP:', {
-        position: mouseEvent.position,
-        button: mouseEvent.button,
-        modifiers: mouseEvent.modifiers
-      })
+      // console.log('🖱️ Mouse UP:', {
+      //   position: mouseEvent.position,
+      //   button: mouseEvent.button,
+      //   modifiers: mouseEvent.modifiers
+      // })
       this.addEvent(mouseEvent)
       this.emit('mouse-event', mouseEvent)
     })
@@ -161,10 +161,10 @@ export class MouseHandler extends EventEmitter {
         timestamp: now
       }
 
-      console.log('🖱️ Mouse MOVE:', {
-        position: mouseEvent.position,
-        modifiers: mouseEvent.modifiers
-      })
+      // console.log('🖱️ Mouse MOVE:', {
+      //   position: mouseEvent.position,
+      //   modifiers: mouseEvent.modifiers
+      // })
       this.addEvent(mouseEvent)
       this.emit('mouse-event', mouseEvent)
     })
@@ -186,11 +186,11 @@ export class MouseHandler extends EventEmitter {
         timestamp: Date.now()
       }
 
-      console.log('🖱️ Mouse WHEEL:', {
-        position: mouseEvent.position,
-        wheelDelta: mouseEvent.wheelDelta,
-        modifiers: mouseEvent.modifiers
-      })
+      // console.log('🖱️ Mouse WHEEL:', {
+      //   position: mouseEvent.position,
+      //   wheelDelta: mouseEvent.wheelDelta,
+      //   modifiers: mouseEvent.modifiers
+      // })
       this.addEvent(mouseEvent)
       this.emit('mouse-event', mouseEvent)
     })
@@ -213,12 +213,12 @@ export class MouseHandler extends EventEmitter {
   private addEvent(event: MouseEvent): void {
     this.events.push(event)
 
-    console.log(`📊 Mouse Events: ${this.events.length} total (type: ${event.type})`)
+    // console.log(`📊 Mouse Events: ${this.events.length} total (type: ${event.type})`)
 
     // Keep array size manageable
     if (this.events.length > this.maxEvents) {
       this.events = this.events.slice(-this.maxEvents + 1000) // Keep last 9000 events
-      console.log(`🧹 Mouse Events: Trimmed to ${this.events.length} events`)
+      // console.log(`🧹 Mouse Events: Trimmed to ${this.events.length} events`)
     }
   }
 

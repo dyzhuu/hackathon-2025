@@ -65,7 +65,7 @@ export class EventManager extends EventEmitter {
 
   private setupMouseHandler(): void {
     mouseHandler.on('mouse-event', (event: MouseEvent) => {
-      console.log('🎯 EventManager received mouse event:', event.type, 'at', event.position)
+      // console.log('🎯 EventManager received mouse event:', event.type, 'at', event.position)
       this.addEvent('mouse', event)
     })
 
@@ -95,9 +95,9 @@ export class EventManager extends EventEmitter {
 
     this.events.push(activityEvent)
 
-    console.log(
-      `📈 EventManager: Added ${category} event #${this.eventCounter} (Total: ${this.events.length})`
-    )
+    // console.log(
+    //   `📈 EventManager: Added ${category} event #${this.eventCounter} (Total: ${this.events.length})`
+    // )
 
     // Emit the event for real-time processing
     this.emit('activity-event', activityEvent)
@@ -105,9 +105,9 @@ export class EventManager extends EventEmitter {
     // Manage memory by removing old events if limit exceeded
     if (this.events.length > this.maxEventsInMemory) {
       const removed = this.events.splice(0, this.events.length - this.maxEventsInMemory)
-      console.log(
-        `🧹 EventManager: Pruned ${removed.length} old events (keeping ${this.events.length})`
-      )
+      // console.log(
+      //   `🧹 EventManager: Pruned ${removed.length} old events (keeping ${this.events.length})`
+      // )
       this.emit('events-pruned', removed.length)
     }
   }
