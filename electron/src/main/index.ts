@@ -6,7 +6,7 @@ import { setupIpcs } from './ipc';
 import { moveTo } from './math';
 
 // Create a window
-function createWindow(route: string = ''): BrowserWindow {
+function createWindow(route: string = '', frame: boolean = true): BrowserWindow {
   const primaryDisplay = screen.getPrimaryDisplay();
 
   // Create the browser window.
@@ -20,7 +20,7 @@ function createWindow(route: string = ''): BrowserWindow {
     x: Math.round((primaryDisplay.workAreaSize.width - 500) * Math.random()), // chang ethis later
     y: Math.round((primaryDisplay.workAreaSize.height - 500) * Math.random() + 200),
     hiddenInMissionControl: true,
-    frame: true,
+    frame: frame,
     transparent: route == '',
     movable: true,
     webPreferences: {
