@@ -72,7 +72,7 @@ export class IntentAnalysisAgent {
 
       let response: z.infer<typeof IntentAnalysisSchema>;
 
-      if (!observationData.screenshotUrl) {
+      if (!observationData.screenshotB64) {
         response = await structuredLLM.invoke(prompt);
       } else {
         response = await structuredLLM.invoke([
@@ -82,8 +82,10 @@ export class IntentAnalysisAgent {
             [
               {
                 type: "image_url",
-                // image_url: { url: `data:image/jpeg;base64,${base64Image}` },
-                image_url: { url: observationData.screenshotUrl },
+                image_url: {
+                  url: `data:image/png;base64,${observationData.screenshotB64}`,
+                },
+                // image_url: { url: observationData.screenshotUrl },
               },
             ],
           ],
@@ -124,7 +126,7 @@ You are an expert task analysis assistant that understands user workflows and pr
 ${observationData.windowEvents.map((e) => `• ${e.processName}: "${e.windowTitle}"`).join("\n")}
 </applications>
 <duration>${insights.durationSec} seconds</duration>
-<screenshot_available>${observationData.screenshotUrl ? "Yes - analyze visual context for task understanding" : "No"}</screenshot_available>
+<screenshot_available>${observationData.screenshotB64 ? "Yes - analyze visual context for task understanding" : "No"}</screenshot_available>
 </session_overview>
 
 <activity_context>

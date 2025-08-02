@@ -96,7 +96,7 @@ interface ObservationData {
       height: number;
     };
   };
-  screenshotUrl: string;         // Path to screenshot file
+  screenshotB64: string;         // A base64 encoded string of the current screenshot
   mouseEvents: MouseEvent[];      // Array of mouse events
   keyboardEvents: KeyboardEvent[]; // Array of keyboard events
 }

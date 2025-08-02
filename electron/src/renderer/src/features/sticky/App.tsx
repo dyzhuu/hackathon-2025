@@ -14,6 +14,10 @@ function Sticky(): React.JSX.Element {
     window.electron.ipcRenderer.send('create-note', data);
   }
 
+  useEffect(() => {
+    window.api.captureScreenshot().then(console.log);
+  }, []);
+
   const stickyStateRef = useRef<string | null>(null);
 
   const [stickyImg, setStickyImg] = useState<string>(sticky_sleepy);

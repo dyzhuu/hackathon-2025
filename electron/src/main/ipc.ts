@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron';
+import { BrowserWindow, desktopCapturer, ipcMain, screen } from 'electron';
 import { EventManager } from './handlers/EventManager';
 
 type IPCContext = {
@@ -10,10 +10,6 @@ export const setupIpcs = (
   eventManager: EventManager
 ): IPCContext => {
   let mainWindow: BrowserWindow | undefined; // Will be used for future main window reference
-
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'));
-
   // Set up IPC handlers for event tracking
   ipcMain.handle('start-tracking', async () => {
     try {
@@ -22,6 +18,18 @@ export const setupIpcs = (
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
+  });
+
+  ipcMain.handle('capture-screenshot', async () => {
+    if (!mainWindow) return;
+    const currentWindow = screen.getDisplayMatching(mainWindow.getBounds());
+    const sources = await desktopCapturer.getSources({
+      types: ['screen'],
+      thumbnailSize: currentWindow.size
+    });
+    const source = sources.find((source) => source.id === `screen:${currentWindow.id}:0`);
+
+    return source?.thumbnail.toPNG().toString('base64');
   });
 
   ipcMain.handle('stop-tracking', () => {
