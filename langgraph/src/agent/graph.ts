@@ -96,7 +96,11 @@ const createPlan = async (
   console.log("📋 Creating action plan...");
 
   try {
-    if (!state.intentAnalysis || !state.personalityState) {
+    if (
+      !state.intentAnalysis ||
+      !state.personalityState ||
+      !state.observationData
+    ) {
       throw new Error(
         "Missing intent analysis or personality state for planning",
       );
@@ -105,6 +109,7 @@ const createPlan = async (
     const actionPlan = await plannerAgent.createPlan(
       state.intentAnalysis,
       state.personalityState.clipperMood,
+      state.observationData,
     );
 
     // Validate the plan
