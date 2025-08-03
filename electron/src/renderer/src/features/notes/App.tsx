@@ -8,7 +8,7 @@ function Notes(): React.JSX.Element {
     });
 
     // Tell the main process you're ready
-    // window.electron.ipcRenderer.send('note-ready');
+    window.electron.ipcRenderer.send('note-ready');
 
     return () => {
       unsubscribeData();

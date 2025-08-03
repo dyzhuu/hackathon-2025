@@ -61,9 +61,9 @@ function Sticky(): React.JSX.Element {
     <div className="m-0 w-full min-h-screen flex flex-col justify-center items-center bg-transparent">
       <img src={stickyImg} alt="sticky" className="w-50 h-50" />
 
-      <button onClick={createNote} className="rounded-md p-2 text-white font-bold bg-gray-700">
+      {/* <button onClick={createNote} className="rounded-md p-2 text-white font-bold bg-gray-700">
         Create Note
-      </button>
+      </button> */}
     </div>
   );
 }

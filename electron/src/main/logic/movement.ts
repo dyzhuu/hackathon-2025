@@ -1,10 +1,13 @@
 import { BrowserWindow, screen } from 'electron';
 import { mouse, Point } from '@nut-tree-fork/nut-js';
 
-const STEP_RANGE = [50, 200];
+const STEP_RANGE = [50, 100];
 
 export function randomLocation(range: [number, number]): number[] {
-  const position = [Math.round(Math.random() * range[0]), Math.round(Math.random() * range[1])];
+  const position = [
+    Math.round(Math.random() * (range[0] - 300)),
+    Math.round(Math.random() * (range[1] - 300))
+  ];
   return position;
 }
 
@@ -34,7 +37,12 @@ export async function moveLinear(window: BrowserWindow, endX: number, endY: numb
         clearInterval(moveIntervalId);
         resolve();
       } else {
-        window.setPosition(newX, newY);
+        window.setBounds({
+          x: newX,
+          y: newY,
+          width: 300,
+          height: 300
+        });
       }
     }, moveInterval);
   });
@@ -67,7 +75,12 @@ export async function moveJerk(window: BrowserWindow, x: number, y: number): Pro
     cy += Math.floor(Math.random() * jork) * Math.sign(Math.random() - 0.5);
 
     try {
-      window.setPosition(cx, cy);
+      window.setBounds({
+        x: cx,
+        y: cy,
+        width: 300,
+        height: 300
+      });
     } catch (ex) {
       console.error(ex);
       return;
@@ -100,7 +113,13 @@ export async function moveCursor(sticky: BrowserWindow, x: number, y: number): P
     cx += Math.floor(velocity * (delta / 1000) * Math.sign(x - cx));
     cy += Math.floor(velocity * (delta / 1000) * Math.sign(y - cy));
 
-    sticky.setPosition(cx, cy);
+    sticky.setBounds({
+      x: cx,
+      y: cy,
+      width: 300,
+      height: 300
+    });
+
     const cursorPos = screen.getCursorScreenPoint();
     if (Math.abs(cursorPos.x - cx - 100) < 100 && Math.abs(cursorPos.y - cy - 100) < 100) {
       await mouse.setPosition(new Point(cx + 100, cy + 100));
@@ -113,6 +132,8 @@ export async function moveCursor(sticky: BrowserWindow, x: number, y: number): P
 
 // Specifies an x-coordinate to through a window to. Gravity simulation
 export async function throwWindow(window: BrowserWindow, end: number): Promise<void> {
+  // console.log(end);
+
   const moveInterval = 1000 / 30; // 30 Steps per second
   const steps = Math.round(Math.random() * STEP_RANGE[1]) + STEP_RANGE[0];
 
@@ -123,7 +144,7 @@ export async function throwWindow(window: BrowserWindow, end: number): Promise<v
   const gravity = (screenHeight - start[1]) / steps;
   const xDir = Math.sign(stepSizeX);
 
-  let stepSizeY = 0;
+  let stepSizeY = -gravity * 0.75;
 
   return new Promise((resolve) => {
     const moveIntervalId = setInterval(() => {
@@ -131,18 +152,23 @@ export async function throwWindow(window: BrowserWindow, end: number): Promise<v
 
       const newX = Math.round(currentPosition[0] + stepSizeX);
 
-      stepSizeY += gravity;
+      stepSizeY += 0.5 * gravity;
       const newY = Math.round(currentPosition[1] + stepSizeY);
 
       if (
         (xDir === 1 && newX >= end) ||
         (xDir === -1 && newX <= end) ||
-        newY >= screen.getPrimaryDisplay().workAreaSize.height
+        newY >= screen.getPrimaryDisplay().workAreaSize.height - 300
       ) {
         clearInterval(moveIntervalId);
         resolve();
       } else {
-        window.setPosition(newX, newY);
+        window.setBounds({
+          x: newX,
+          y: newY,
+          width: 300,
+          height: 300
+        });
       }
     }, moveInterval);
   });

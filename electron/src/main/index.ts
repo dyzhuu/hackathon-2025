@@ -10,10 +10,10 @@ import { randomLocation, moveLinear, moveJerk, moveCursor, throwWindow } from '.
 function createWindow(
   route: string = '',
   hasFrame: boolean = true,
-  isTransparent: boolean = false
+  isTransparent: boolean = false,
+  bgColor: string = '#00000000'
 ): BrowserWindow {
   const primaryDisplay = screen.getPrimaryDisplay();
-
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 300,
@@ -28,12 +28,14 @@ function createWindow(
     frame: hasFrame,
     transparent: isTransparent,
     hasShadow: false,
-    backgroundColor: '#00000000',
+    backgroundColor: bgColor,
     movable: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
-    }
+    },
+    // This disables the native macOS "resolution frame label" when moving the window
+    titleBarStyle: 'customButtonsOnHover'
   });
 
   if (import.meta.env.DEV && isTransparent) {
@@ -103,24 +105,20 @@ app.whenReady().then(() => {
 
   // Event listeners
   ipcMain.on('create-note', (_event, data) => {
-    const note = createWindow('notes');
+    const note = createWindow('notes', true, false, '#fff085');
 
     const pos = sticky.getPosition();
-
-    note.setPosition(pos[0] + 100, pos[1] - 50);
-    if (Math.random() > 0.5) {
-      throwWindow(
-        note,
-        Math.random() * pos[0] + Math.random() > 0.5 ? 1 : -1 * Math.random() * 1000
-      );
-    }
+    note.setPosition(pos[0], pos[1]);
 
     ipcMain.once('note-ready', (event) => {
       event.sender.send('note-data', data);
+
+      if (Math.random() > 0.5) {
+        throwWindow(note, pos[0] + (Math.random() > 0.5 ? 1 : -1) * Math.random() * 5000);
+      }
     });
 
     sticky.show();
-    console.log(data);
   });
 
   app.on('activate', function () {
@@ -131,9 +129,9 @@ app.whenReady().then(() => {
 
   // Actions
   const moveActions = {
-    jerk: moveJerk,
     linear: moveLinear,
-    cursor: moveCursor
+    // jerk: moveJerk,
+    // cursor: moveCursor
   };
 
   (async () => {
@@ -162,6 +160,8 @@ app.whenReady().then(() => {
 
       move.type = null;
       sticky.webContents.send('sticky-move', move);
+
+      ipcMain.emit('create-note');
     }
   })();
 });
