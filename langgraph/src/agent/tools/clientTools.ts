@@ -43,7 +43,7 @@ export const executeShellTool = tool(
       return {
         success: true,
         result: data.result,
-        output: data.output || '',
+        output: data.stdout || data.stderr || '',
         error: null
       };
     } catch (error) {

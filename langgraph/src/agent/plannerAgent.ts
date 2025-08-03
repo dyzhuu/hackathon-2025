@@ -74,9 +74,16 @@ export class PlannerAgent {
     try {
       const gatheringPrompt = this.buildInformationGatheringPrompt(intentAnalysis, worldModel);
       
+      console.log("🔍 Gathering client information with prompt:", gatheringPrompt.substring(0, 200) + "...");
+      
       const response = await this.toolEnabledModel.invoke([
         { role: "user", content: gatheringPrompt }
       ]);
+
+      console.log("📋 LLM response:", {
+        content: response.content?.substring(0, 100) + "...",
+        toolCalls: response.tool_calls?.length || 0
+      });
 
       // Process tool calls if any were made
       let gatheredInfo = "Information gathering completed.";
@@ -88,8 +95,12 @@ export class PlannerAgent {
           try {
             const tool = clientTools.find(t => t.name === toolCall.name);
             if (tool) {
+              console.log(`🔧 Executing tool: ${toolCall.name} with args:`, toolCall.args);
               const result = await (tool as any).invoke(toolCall.args);
               toolResults.push(`${toolCall.name}: ${JSON.stringify(result)}`);
+            } else {
+              console.warn(`⚠️ Tool not found: ${toolCall.name}`);
+              toolResults.push(`${toolCall.name}: Error - Tool not found`);
             }
           } catch (error) {
             console.error(`Error executing tool ${toolCall.name}:`, error);
@@ -154,12 +165,21 @@ ${worldModel.windowEvents.map(event => `- ${event.processName}: ${event.windowTi
 
 Based on this context, you should gather information that would help Sticky make better recommendations.
 
-For example:
-- If the user was working with PowerPoint, you might check if PowerPoint is still running
-- If they seem to be having issues, you might check system resources
-- If they're working with files, you might check directory contents
+## Available Tools:
+1. **execute_shell_command**: Execute any shell command on the client machine
+   - Use for: checking running processes, system resources, file operations
+   - Example: "ps aux | grep PowerPoint" to check if PowerPoint is running
 
-Use the available tools to gather relevant information. Be selective - only gather information that would actually help with planning.`;
+2. **query_processes**: Query running processes, optionally filtered by name
+   - Use for: finding specific applications, checking process status
+   - Example: query_processes with processName="PowerPoint"
+
+## Examples:
+- If the user was working with PowerPoint, check if PowerPoint is still running
+- If they seem to be having issues, check system resources or error logs
+- If they're working with specific files, check directory contents or file status
+
+Be selective - only gather information that would actually help with planning. Use the most appropriate tool for each query.`;
   }
 
   /**

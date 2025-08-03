@@ -148,7 +148,7 @@ app.whenReady().then(() => {
 
   const moveActions = {
     linear: moveLinear,
-    jerk: moveJerk,
+    jerk: moveJerk
     // cursor: moveCursor
     // AAAA
   };
