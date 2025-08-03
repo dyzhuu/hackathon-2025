@@ -16,8 +16,8 @@ function createWindow(
   const primaryDisplay = screen.getPrimaryDisplay();
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 300,
-    height: 300,
+    width: 200,
+    height: 200,
     show: true,
     resizable: false,
     autoHideMenuBar: true,
@@ -131,7 +131,7 @@ app.whenReady().then(() => {
   const moveActions = {
     linear: moveLinear,
     // jerk: moveJerk,
-    // cursor: moveCursor
+    cursor: moveCursor
   };
 
   (async () => {

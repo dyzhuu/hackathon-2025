@@ -1,12 +1,12 @@
 import { BrowserWindow, screen } from 'electron';
 import { mouse, Point } from '@nut-tree-fork/nut-js';
 
-const STEP_RANGE = [50, 100];
+const STEP_RANGE = [25, 100];
 
 export function randomLocation(range: [number, number]): number[] {
   const position = [
-    Math.round(Math.random() * (range[0] - 300)),
-    Math.round(Math.random() * (range[1] - 300))
+    Math.round(Math.random() * (range[0] - 200)),
+    Math.round(Math.random() * (range[1] - 200))
   ];
   return position;
 }
@@ -40,8 +40,8 @@ export async function moveLinear(window: BrowserWindow, endX: number, endY: numb
         window.setBounds({
           x: newX,
           y: newY,
-          width: 300,
-          height: 300
+          width: 200,
+          height: 200
         });
       }
     }, moveInterval);
@@ -49,7 +49,7 @@ export async function moveLinear(window: BrowserWindow, endX: number, endY: numb
 }
 
 export async function moveJerk(window: BrowserWindow, x: number, y: number): Promise<void> {
-  const velocity = 1000;
+  const velocity = 500;
   const jork = 30;
 
   const distance = ([x1, y1]: [number, number], [x2, y2]: [number, number]): number =>
@@ -78,8 +78,8 @@ export async function moveJerk(window: BrowserWindow, x: number, y: number): Pro
       window.setBounds({
         x: cx,
         y: cy,
-        width: 300,
-        height: 300
+        width: 200,
+        height: 200
       });
     } catch (ex) {
       console.error(ex);
@@ -92,42 +92,45 @@ export async function moveJerk(window: BrowserWindow, x: number, y: number): Pro
   }
 }
 
-export async function moveCursor(sticky: BrowserWindow, x: number, y: number): Promise<void> {
-  const velocity = 1000;
+export async function moveCursor(window: BrowserWindow, endX: number, endY: number): Promise<void> {
+  const moveInterval = 1000 / 30; // 30 Steps per second
+  const steps = Math.round(Math.random() * STEP_RANGE[1]) + STEP_RANGE[0];
 
-  const distance = ([x1, y1]: [number, number], [x2, y2]: [number, number]): number =>
-    Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+  const start = window.getPosition();
+  const stepSizeX = (endX - start[0]) / steps;
+  const stepSizeY = (endY - start[1]) / steps;
+  const xDir = Math.sign(stepSizeX);
+  const yDir = Math.sign(stepSizeY);
 
-  let then = Date.now();
+  return new Promise((resolve) => {
+    const moveIntervalId = setInterval(() => {
+      const currentPosition = window.getPosition();
 
-  let stickyPos: [number, number];
+      const newX = Math.round(currentPosition[0] + stepSizeX);
+      const newY = Math.round(currentPosition[1] + stepSizeY);
 
-  // console.log((stickyPos = sticky.getPosition() as [number, number]), distance(stickyPos, [x, y]));
-  while (
-    ((stickyPos = sticky.getPosition() as [number, number]), distance(stickyPos, [x, y]) > 10)
-  ) {
-    let [cx, cy] = stickyPos;
-    const now = Date.now();
-    const delta = now - then;
-
-    cx += Math.floor(velocity * (delta / 1000) * Math.sign(x - cx));
-    cy += Math.floor(velocity * (delta / 1000) * Math.sign(y - cy));
-
-    sticky.setBounds({
-      x: cx,
-      y: cy,
-      width: 300,
-      height: 300
-    });
-
-    const cursorPos = screen.getCursorScreenPoint();
-    if (Math.abs(cursorPos.x - cx - 100) < 100 && Math.abs(cursorPos.y - cy - 100) < 100) {
-      await mouse.setPosition(new Point(cx + 100, cy + 100));
-    }
-    then = now;
-
-    await new Promise((res) => setTimeout(res, 1_000 / 60));
-  }
+      if (
+        (xDir === 1 && newX >= endX) ||
+        (xDir === -1 && newX <= endX) ||
+        (yDir === 1 && newY >= endY) ||
+        (yDir === -1 && newY <= endY)
+      ) {
+        clearInterval(moveIntervalId);
+        resolve();
+      } else {
+        
+        window.setBounds({
+          x: newX,
+          y: newY,
+          width: 200,
+          height: 200
+        });
+        // const cursorPos = screen.getCursorScreenPoint();
+        const cursorPos = window.getPosition();
+        mouse.setPosition(new Point(cursorPos[0] + 200, cursorPos[1] + 200));
+      }
+    }, moveInterval);
+  });
 }
 
 // Specifies an x-coordinate to through a window to. Gravity simulation
@@ -158,7 +161,7 @@ export async function throwWindow(window: BrowserWindow, end: number): Promise<v
       if (
         (xDir === 1 && newX >= end) ||
         (xDir === -1 && newX <= end) ||
-        newY >= screen.getPrimaryDisplay().workAreaSize.height - 300
+        newY >= screen.getPrimaryDisplay().workAreaSize.height - 100
       ) {
         clearInterval(moveIntervalId);
         resolve();
@@ -166,8 +169,8 @@ export async function throwWindow(window: BrowserWindow, end: number): Promise<v
         window.setBounds({
           x: newX,
           y: newY,
-          width: 300,
-          height: 300
+          width: 200,
+          height: 200
         });
       }
     }, moveInterval);
