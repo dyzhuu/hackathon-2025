@@ -9,7 +9,7 @@ import { randomLocation, moveLinear, moveJerk, moveCursor, throwWindow } from '.
 // Create a window
 function createWindow(
   route: string = '',
-  hasFrame: boolean = true,
+  hasFrame: boolean = false,
   isTransparent: boolean = false,
   bgColor: string = '#00000000'
 ): BrowserWindow {
@@ -100,7 +100,7 @@ app.whenReady().then(() => {
   //  Set up window data consumer for LLM processing
   eventManager.on('window-data', (windowData: ObservationData) => {
     // David handle your promise rejections for this commented out stuff pls lmao
-    // getIntendedActions({ observationData: windowData });
+    getIntendedActions({ observationData: windowData });
   });
 
   // Event listeners

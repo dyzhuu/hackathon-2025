@@ -48,8 +48,8 @@ export class IntentAnalysisAgent {
 
   constructor() {
     this.model = new ChatGoogleGenerativeAI({
-      // model: "gemini-2.0-flash-001",
-      model: "gemini-2.5-pro",
+      model: "gemini-2.5-flash",
+      // model: "gemini-2.5-pro",
       temperature: 0.1,
     });
   }
