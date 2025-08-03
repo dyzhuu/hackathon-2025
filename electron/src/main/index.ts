@@ -116,6 +116,8 @@ app.whenReady().then(() => {
       if (Math.random() > 0.5) {
         throwWindow(note, pos[0] + (Math.random() > 0.5 ? 1 : -1) * Math.random() * 5000);
       }
+
+      sticky.show();
     });
 
     sticky.show();
@@ -130,7 +132,7 @@ app.whenReady().then(() => {
   // Actions
   const moveActions = {
     linear: moveLinear,
-    // jerk: moveJerk,
+    jerk: moveJerk,
     cursor: moveCursor
   };
 
