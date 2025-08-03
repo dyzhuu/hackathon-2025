@@ -56,7 +56,11 @@ export class PlannerAgent {
     worldModel: ObservationData,
   ): Promise<ActionPlan> {
     try {
-      const prompt = this.buildPlanningPrompt(intentAnalysis, clipperMood);
+      const prompt = this.buildPlanningPrompt(
+        intentAnalysis,
+        clipperMood,
+        worldModel,
+      );
 
       const response = await this.model
         .withStructuredOutput(ActionPlanSchema, {
