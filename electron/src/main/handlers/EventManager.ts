@@ -95,7 +95,7 @@ export class EventManager extends EventEmitter {
   private eventCounter: number = 0;
   private statsInterval: NodeJS.Timeout | null = null;
   // private readonly WINDOW_INTERVAL_MS = 5000; // 5 seconds
-  private readonly WINDOW_INTERVAL_MS = 10000; // 5 seconds
+  private readonly WINDOW_INTERVAL_MS = 20000; // 20 seconds
   private windowedEvents: ActivityEvent[] = []; // Events for current window
 
   constructor() {
@@ -382,7 +382,7 @@ export class EventManager extends EventEmitter {
       if (event.distance !== undefined) {
         totalDistance += event.distance;
       }
-      
+
       if (event.velocity !== undefined) {
         velocities.push(event.velocity);
         maxVelocity = Math.max(maxVelocity, event.velocity);

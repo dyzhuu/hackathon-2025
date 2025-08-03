@@ -13,7 +13,7 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 // Zod schema for action commands
 const ActionCommandSchema = z.object({
   actionName: z
-    .enum(["move_cursor", "show_text", "wait", "animate_sticky", "do_nothing"])
+    .enum(["move_cursor", "show_text", "wait", "do_nothing"])
     .describe("The specific action to execute"),
   parameters: z
     .object({
@@ -23,7 +23,6 @@ const ActionCommandSchema = z.object({
       text: z.string().optional(),
       durationMs: z.number().optional(),
       position: z.object({ x: z.number(), y: z.number() }).optional(),
-      animation: z.string().optional(),
     })
     .describe("Parameters needed for the action"),
 });
@@ -43,6 +42,7 @@ export class PlannerAgent {
   constructor() {
     this.model = new ChatGoogleGenerativeAI({
       model: "gemini-2.5-flash-lite",
+      streaming: false,
       temperature: 0.3, // Some creativity but mostly deterministic
     });
   }
@@ -99,27 +99,20 @@ You are Sticky's planning system. Create a specific, executable action plan base
 ## Current Situation
 - User Intent: ${JSON.stringify(intentAnalysis, null, 2)}
 - Sticky's Mood: ${clipperMood}
-- World Model: ${JSON.stringify(worldModel, null, 2)}
+   - World Model: ${JSON.stringify(worldModel, null, 2)}
 
 ## Available Actions
 1. **move_cursor**: Move the user's cursor
    - Parameters: {x: number, y: number, relative?: boolean}
 
-2. **move_sticky**: Move to a given position
-   - Parameters: {x: number, y: number}
-
-3. **show_text**: Display text bubble/tooltip
+2. **show_text**: Display text bubble/tooltip
    - Parameters: {text: string, durationMs?: number, position?: {x, y}}
 
-4. **wait**: Pause execution
+3. **wait**: Pause execution
    - Parameters: {durationMs: number}
 
-5. **animate_sticky**: Animate Sticky character
-   - Parameters: {animation: string, durationMs?: number}
-
-6. **do_nothing**: Do nothing and immediately return
+4. **do_nothing**: Do nothing and immediately return
    - Parameters: {} (no parameters required)
-   
 
 ## Mood-Based Planning Guidelines
 
@@ -199,7 +192,6 @@ Create a plan that matches Sticky's current mood while appropriately responding 
           break;
 
         case "show_text":
-        case "speak_text":
           if (typeof action.parameters.text !== "string") {
             errors.push(
               `Action ${i + 1}: ${action.actionName} requires text parameter`,

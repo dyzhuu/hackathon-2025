@@ -14,13 +14,11 @@ import { StateAnnotation } from "./state.js";
 import { IntentAnalysisAgent } from "./intentAnalysis.js";
 import { PersonalityAgent } from "./personalityAgent.js";
 import { PlannerAgent } from "./plannerAgent.js";
-import { ResponseAgent } from "./responseAgent.js";
 
 // Initialize all agent instances
 const intentAnalyzer = new IntentAnalysisAgent();
 const personalityAgent = new PersonalityAgent();
 const plannerAgent = new PlannerAgent();
-const responseAgent = new ResponseAgent();
 
 /**
  * Node 2: Analyze user intent from observation data
@@ -134,45 +132,6 @@ const createPlan = async (
 };
 
 /**
- * Node 5: Execute a single action from the plan
- */
-const executeAction = async (
-  state: typeof StateAnnotation.State,
-  _config: RunnableConfig,
-): Promise<typeof StateAnnotation.Update> => {
-  console.log("⚡ Executing action...");
-
-  try {
-    if (!state.actionPlan || !state.actionPlan.actionPlan) {
-      throw new Error("No action plan available for execution");
-    }
-
-    const currentIndex = state.currentActionIndex || 0;
-    const actions = state.actionPlan.actionPlan;
-
-    if (currentIndex >= actions.length) {
-      throw new Error("Action index out of bounds");
-    }
-
-    const currentAction = actions[currentIndex];
-    const result = await responseAgent.executeAction(currentAction);
-
-    return {
-      actionResults: [result] as any,
-      currentActionIndex: (currentIndex + 1) as any,
-      lastError: null as any,
-    };
-  } catch (error) {
-    console.error("Error in Response Agent:", error);
-    return {
-      lastError: (error instanceof Error
-        ? error.message
-        : "Unknown error in action execution") as any,
-    };
-  }
-};
-
-/**
  * Routing function: Determines the next step in the workflow
  */
 const routeFlow = (state: typeof StateAnnotation.State): string => {
@@ -231,7 +190,6 @@ const builder = new StateGraph(StateAnnotation)
   .addNode("analyzeIntent", analyzeIntent)
   .addNode("updatePersonality", updatePersonality)
   .addNode("createPlan", createPlan)
-  .addNode("executeAction", executeAction)
   .addNode("resetWorkflow", resetWorkflow)
 
   // Start with intent analysis - this is the entry point
@@ -240,8 +198,7 @@ const builder = new StateGraph(StateAnnotation)
   // Set up the flow with conditional routing
   .addConditionalEdges("analyzeIntent", routeFlow)
   .addConditionalEdges("updatePersonality", routeFlow)
-  .addConditionalEdges("createPlan", routeFlow)
-  .addConditionalEdges("executeAction", routeFlow);
+  .addConditionalEdges("createPlan", routeFlow);
 
 export const graph = builder.compile();
 

@@ -17,8 +17,14 @@ export async function getIntendedActions({
     }
   );
 
+  let res = '';
+
   for await (const chunk of streamResponse) {
     // console.log(`Receiving new event of type: ${chunk.event}...`);
-    // console.log(JSON.stringify(chunk.data));
+    if (chunk.data[1]?.langgraph_node === 'createPlan') {
+      res += chunk.data[0]?.content;
+    }
   }
+
+  console.log(JSON.parse(res));
 }
