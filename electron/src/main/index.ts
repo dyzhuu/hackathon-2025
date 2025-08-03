@@ -4,7 +4,7 @@ import { setupIpcs } from './ipc';
 import { join } from 'path';
 import { eventManager, ObservationData } from './handlers/EventManager';
 import { getIntendedActions } from './langgraph/functions';
-import { randomLocation, moveLinear, throwWindow, moveCursor } from './logic/movement';
+import { randomLocation, moveLinear, moveJerk, throwWindow, moveCursor } from './logic/movement';
 import { startServer } from './api/server';
 
 // Create a window
@@ -127,7 +127,12 @@ app.whenReady().then(() => {
       event.sender.send('note-data', noteText);
 
       if (Math.random() > 0.5) {
-        throwWindow(note, pos[0] + (Math.random() > 0.5 ? 1 : -1) * Math.random() * 5000);
+        let end = pos[0] + (Math.random() > 0.5 ? 1 : -1) * Math.random() * 5000;
+        if (end < 0) end = 0;
+        else if (end > screen.getPrimaryDisplay().workAreaSize.width - 200) {
+          end = screen.getPrimaryDisplay().workAreaSize.width - 200;
+        }
+        throwWindow(note, end);
       }
 
       sticky.show();
@@ -145,7 +150,7 @@ app.whenReady().then(() => {
   // Actions
   const moveActions = {
     linear: moveLinear,
-    jerk: moveJerk,
+    // jerk: moveJerk,
     cursor: moveCursor
   };
 

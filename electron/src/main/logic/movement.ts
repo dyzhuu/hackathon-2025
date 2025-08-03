@@ -50,7 +50,7 @@ export async function moveLinear(window: BrowserWindow, endX: number, endY: numb
 
 export async function moveJerk(window: BrowserWindow, x: number, y: number): Promise<void> {
   const velocity = 500;
-  const jork = 30;
+  const jork = 20;
 
   const distance = ([x1, y1]: [number, number], [x2, y2]: [number, number]): number =>
     Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
