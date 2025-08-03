@@ -109,10 +109,11 @@ app.whenReady().then(() => {
     getIntendedActions({ observationData: windowData });
   });
 
-  const notes: string[] = [];
+  const notes: string[] = ["Hi, I'm Sticky!"];
 
   ipcMain.on('show_text', (data) => {
     notes.push(data.text);
+    ipcMain.emit('create-note', data);
   });
 
   // Event listeners
@@ -148,10 +149,12 @@ app.whenReady().then(() => {
   });
 
   // Actions
+  ipcMain.emit('create-note');
+
   const moveActions = {
-    linear: moveLinear,
+    linear: moveLinear
     // jerk: moveJerk,
-    cursor: moveCursor
+    // cursor: moveCursor
   };
 
   (async () => {
@@ -169,10 +172,12 @@ app.whenReady().then(() => {
       ]);
 
       const stickyPos = sticky.getPosition();
+      const xDir = Math.sign(endX - stickyPos[0]);
+      const yDir = Math.sign(endY - stickyPos[1]);
+
       const move: { type: string | null; direction: string } = {
         type: randomKey,
-        direction:
-          Math.sign(endX - stickyPos[0]) === Math.sign(endY - stickyPos[1]) ? 'backslash' : 'slash'
+        direction: xDir === yDir ? (xDir > 0 ? 'rightdown' : 'backslash') : 'slash'
       };
       sticky.webContents.send('sticky-move', move);
 
@@ -181,7 +186,7 @@ app.whenReady().then(() => {
       move.type = null;
       sticky.webContents.send('sticky-move', move);
 
-      ipcMain.emit('create-note');
+      // ipcMain.emit('create-note');
     }
   })();
 });

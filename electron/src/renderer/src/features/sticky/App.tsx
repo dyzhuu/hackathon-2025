@@ -7,6 +7,8 @@ import sticky_move_backslash_1 from '../../assets/sticky_move_backslash_1.png';
 import sticky_move_backslash_2 from '../../assets/sticky_move_backslash_2.png';
 import sticky_move_slash_1 from '../../assets/sticky_move_slash_1.png';
 import sticky_move_slash_2 from '../../assets/sticky_move_slash_2.png';
+import sticky_move_downright_1 from '../../assets/sticky_downright_1.png';
+import sticky_move_downright_2 from '../../assets/sticky_downright_2.png';
 
 function Sticky(): React.JSX.Element {
   function createNote(): void {
@@ -41,7 +43,9 @@ function Sticky(): React.JSX.Element {
                     ? [sticky_move_slash_1, sticky_move_slash_2]
                     : moveData.direction === 'backslash'
                       ? [sticky_move_backslash_1, sticky_move_backslash_2]
-                      : [prevImg, prevImg];
+                      : moveData.direction === 'rightdown'
+                        ? [sticky_move_downright_1, sticky_move_downright_2]
+                        : [prevImg, prevImg];
                 return prevImg === images[0] ? images[1] : images[0];
               }
               // To add more move types images here
