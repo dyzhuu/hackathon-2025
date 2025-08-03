@@ -121,7 +121,7 @@ app.whenReady().then(() => {
   ipcMain.on('show_text', (data) => {
     notes.push(data.text);
     ipcMain.emit('create-note', data);
-    ipcMain.emit('sticky-mood', data.mood);
+    sticky.webContents.send('sticky-move', data.mood);
   });
 
   // Event listeners

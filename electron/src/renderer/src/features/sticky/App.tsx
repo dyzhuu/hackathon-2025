@@ -23,19 +23,25 @@ function Sticky(): React.JSX.Element {
 
   useEffect(() => {
     const unsubscribedMood = window.electron.ipcRenderer.on('sticky-mood', (_event, mood) => {
-      if (mood === 'Sleepy') {
-        stickyMoodRef.current = sticky_sleepy;
-      } else if (mood === 'Mischievous' || mood === 'Playful' || mood === 'Curious') {
-        stickyMoodRef.current = sticky_mischevious;
-      } else if (mood === 'Sarcastic') {
-        stickyMoodRef.current = sticky_confused;
-      } else {
-        stickyMoodRef.current = sticky_sleepy;
-      }
+      // console.log('Sticky mood changed:', mood);
+      // if (mood === 'Sleepy') {
+      //   stickyMoodRef.current = sticky_sleepy;
+      // } else if (mood === 'Mischievous' || mood === 'Playful' || mood === 'Curious') {
+      //   stickyMoodRef.current = sticky_mischevious;
+      // } else if (mood === 'Sarcastic') {
+      //   stickyMoodRef.current = sticky_confused;
+      // } else {
+      //   stickyMoodRef.current = sticky_sleepy;
+      // }
     });
 
     const unsubscribeMove = window.electron.ipcRenderer.on('sticky-move', (_event, moveData) => {
       stickyStateRef.current = moveData.type;
+
+      // Randomize sticky mood
+      const moods = [sticky_sleepy, sticky_mischevious, sticky_confused];
+      const randomMood = moods[Math.floor(Math.random() * moods.length)];
+      stickyMoodRef.current = randomMood;
 
       if (moveData.type === null) {
         setStickyImg(stickyMoodRef.current);
