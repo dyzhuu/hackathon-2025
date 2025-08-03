@@ -103,15 +103,22 @@ app.whenReady().then(() => {
     getIntendedActions({ observationData: windowData });
   });
 
+  const notes: string[] = [];
+
+  ipcMain.on('show_text', (data) => {
+    notes.push(data.text);
+  });
+
   // Event listeners
-  ipcMain.on('create-note', (_event, data) => {
+  ipcMain.on('create-note', (data) => {
     const note = createWindow('notes', true, false, '#fff085');
 
     const pos = sticky.getPosition();
     note.setPosition(pos[0], pos[1]);
 
     ipcMain.once('note-ready', (event) => {
-      event.sender.send('note-data', data);
+      const noteText = notes.pop() || "Hi, I'm Sticky!";
+      event.sender.send('note-data', noteText);
 
       if (Math.random() > 0.5) {
         throwWindow(note, pos[0] + (Math.random() > 0.5 ? 1 : -1) * Math.random() * 5000);
