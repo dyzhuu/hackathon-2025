@@ -4,15 +4,8 @@ import { setupIpcs } from './ipc';
 import { join } from 'path';
 import { eventManager, ObservationData } from './handlers/EventManager';
 import { getIntendedActions } from './langgraph/functions';
-import {
-  randomLocation,
-  moveLinear,
-  moveTp,
-  moveJerk,
-  throwWindow,
-  moveCursor
-} from './logic/movement';
-import { startServer } from './api/server';
+import { randomLocation, moveLinear, moveTp, throwWindow, moveCursor } from './logic/movement';
+// import { startServer } from './api/server';
 
 // Create a window
 function createWindow(
@@ -95,9 +88,9 @@ app.whenReady().then(() => {
   ipcContext.setMainWindow(sticky);
 
   // Start API server for LangGraph tool integration
-  startServer().catch((error) => {
-    console.error('❌ Failed to start API server:', error);
-  });
+  // startServer().catch((error) => {
+  //   console.error('❌ Failed to start API server:', error);
+  // });
 
   // Start tracking automatically (optional)
   eventManager.start().catch(console.error);

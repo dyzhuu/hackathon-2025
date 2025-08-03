@@ -15,12 +15,7 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 // Zod schema for action commands
 const ActionCommandSchema = z.object({
   actionName: z
-    .enum([
-      "show_text",
-      "wait",
-      "do_nothing",
-      "execute_shell_command",
-    ])
+    .enum(["show_text", "wait", "do_nothing", "execute_shell_command"])
     .describe("The specific action to execute"),
   parameters: z
     .object({
@@ -424,13 +419,13 @@ Create a comprehensive action plan that matches Sticky's current mood while appr
           }
           break;
 
-        case "execute_shell_command":
-          if (typeof action.parameters.command !== "string") {
-            errors.push(
-              `Action ${i + 1}: execute_shell_command requires command parameter`,
-            );
-          }
-          break;
+        // case "execute_shell_command":
+        //   if (typeof action.parameters.command !== "string") {
+        //     errors.push(
+        //       `Action ${i + 1}: execute_shell_command requires command parameter`,
+        //     );
+        //   }
+        //   break;
       }
     }
 

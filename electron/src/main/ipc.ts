@@ -1,5 +1,6 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import { EventManager } from './handlers/EventManager';
+import { exec } from 'child_process';
 
 type IPCContext = {
   setMainWindow: (window: BrowserWindow) => void;
@@ -48,6 +49,12 @@ export const setupIpcs = (
   });
 
   ipcMain.handle('platform', () => process.platform);
+
+  ipcMain.handle('execute-shell-command', (event, command) => {
+    exec(command, (error, stdout, stderr) => {
+      event.sender.send('execute-shell-command-reply', { stdout, stderr });
+    });
+  });
 
   return {
     setMainWindow: (window) => (mainWindow = window)
