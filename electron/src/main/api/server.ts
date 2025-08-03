@@ -1,5 +1,5 @@
 import express from 'express';
-
+import { exec } from 'child_process';
 const app = express();
 const port = 3000;
 
@@ -15,7 +15,27 @@ app.get('/health', (_req, res) => {
 app.post('/api/execute-shell', (req, res) => {
   const { command } = req.body;
   console.log('Command received:', command);
-  res.json({ result: 'command executed', command });
+
+  exec(command, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Execution error: ${error.message}`);
+      res.status(500).json({ error: error.message });
+
+      return;
+    }
+
+    if (stderr) {
+      console.warn(`stderr: ${stderr}`);
+    }
+
+    console.log(`stdout: ${stdout}`);
+    res.json({
+      result: 'command executed',
+      command,
+      stdout,
+      stderr
+    });
+  });
 });
 
 // Start server
