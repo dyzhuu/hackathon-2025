@@ -16,8 +16,8 @@ function Notes(): React.JSX.Element {
   }, []);
 
   return (
-    <div className="w-full min-h-screen flex justify-center items-center bg-yellow-200">
-      <h1 className="text-3xl text-gray-800 font-bold">{message ?? 'Notes'}</h1>
+    <div className="w-[150px] h-screen flex justify-center bg-yellow-200">
+      <h1 className="p-2 text-l text-gray-800 font-bold">{message ?? 'Notes'}</h1>
     </div>
   );
 }

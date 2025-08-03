@@ -4,7 +4,7 @@ import { setupIpcs } from './ipc';
 import { join } from 'path';
 import { eventManager, ObservationData } from './handlers/EventManager';
 import { getIntendedActions } from './langgraph/functions';
-import { randomLocation, moveLinear, throwWindow, moveCursor } from './logic/movement';
+import { randomLocation, moveLinear, moveJerk, throwWindow, moveCursor } from './logic/movement';
 import { startServer } from './api/server';
 
 // Create a window
@@ -109,10 +109,11 @@ app.whenReady().then(() => {
     getIntendedActions({ observationData: windowData });
   });
 
-  const notes: string[] = [];
+  const notes: string[] = ["Hi, I'm Sticky!"];
 
   ipcMain.on('show_text', (data) => {
     notes.push(data.text);
+    ipcMain.emit('create-note', data);
   });
 
   // Event listeners
@@ -143,10 +144,13 @@ app.whenReady().then(() => {
   });
 
   // Actions
+  ipcMain.emit('create-note');
+
   const moveActions = {
     linear: moveLinear,
     jerk: moveJerk,
-    cursor: moveCursor
+    // cursor: moveCursor
+    // AAAA
   };
 
   (async () => {
@@ -176,7 +180,7 @@ app.whenReady().then(() => {
       move.type = null;
       sticky.webContents.send('sticky-move', move);
 
-      ipcMain.emit('create-note');
+      // ipcMain.emit('create-note');
     }
   })();
 });
