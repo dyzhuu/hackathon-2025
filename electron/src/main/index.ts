@@ -4,7 +4,14 @@ import { setupIpcs } from './ipc';
 import { join } from 'path';
 import { eventManager, ObservationData } from './handlers/EventManager';
 import { getIntendedActions } from './langgraph/functions';
-import { randomLocation, moveLinear, moveTp, moveJerk, throwWindow, moveCursor } from './logic/movement';
+import {
+  randomLocation,
+  moveLinear,
+  moveTp,
+  moveJerk,
+  throwWindow,
+  moveCursor
+} from './logic/movement';
 import { startServer } from './api/server';
 
 // Create a window
@@ -151,9 +158,9 @@ app.whenReady().then(() => {
 
   const moveActions = {
     linear: moveLinear,
-    tp: moveTp
+    tp: moveTp,
+    cursor: moveCursor
     // jerk: moveJerk
-    // cursor: moveCursor
   };
 
   (async () => {

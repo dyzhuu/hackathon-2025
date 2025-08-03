@@ -10,6 +10,7 @@ import { z } from "zod";
 
 // Configuration for client connection
 const CLIENT_BASE_URL = process.env.CLIENT_BASE_URL || "http://localhost:3000";
+const REQUEST_TIMEOUT_MS = 5000;
 
 /**
  * Tool for executing shell commands on the client machine
@@ -20,7 +21,10 @@ export const executeShellTool = tool(
       console.log(`🔧 Executing shell command on client: ${command}`);
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const timeoutId = setTimeout(
+        () => controller.abort(),
+        REQUEST_TIMEOUT_MS,
+      );
 
       const response = await fetch(`${CLIENT_BASE_URL}/api/execute-shell`, {
         method: "POST",
@@ -50,21 +54,11 @@ export const executeShellTool = tool(
       console.error(`❌ Error executing shell command:`, error);
 
       if (error instanceof Error && error.name === "AbortError") {
-        return {
-          success: false,
-          result: null,
-          output: "",
-          error: `Request timeout after ${timeout}ms - check if client server is running on ${CLIENT_BASE_URL}`,
-        };
+        return "Tool could not be called";
       }
 
       if (error instanceof TypeError && error.message.includes("fetch")) {
-        return {
-          success: false,
-          result: null,
-          output: "",
-          error: `Cannot connect to client server at ${CLIENT_BASE_URL} - make sure the Electron app server is running`,
-        };
+        return "Tool could not be called";
       }
 
       return {

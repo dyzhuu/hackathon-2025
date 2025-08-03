@@ -63,6 +63,12 @@ export class PersonalityAgent {
         })
         .invoke(prompt);
 
+      // Validate response structure
+      if (!response || !response.clipperMood || !response.moodReason) {
+        console.error("Personality Agent: Invalid response structure", response);
+        throw new Error("Invalid response from personality model");
+      }
+
       // Update internal state
       if (response.clipperMood !== this.currentMood) {
         this.moodHistory.push({
@@ -84,6 +90,7 @@ export class PersonalityAgent {
       };
     } catch (error) {
       console.error("Personality Agent: Error updating personality", error);
+      console.log(`Personality Agent: Maintaining current mood (${this.currentMood}) due to error`);
 
       // Return current mood on error
       return {
@@ -144,16 +151,20 @@ You are the Personality Core for an AI assistant named Sticky. Your sole functio
   </mood_transition_rules>
 
   <mood_matrix>
-    ${Object.values(MOOD_DEFINITIONS).map(mood => `
+    ${Object.values(MOOD_DEFINITIONS)
+      .map(
+        (mood) => `
     <mood name="${mood.name}">
       <description>${mood.description}</description>
       <primary_triggers>
-        ${mood.primaryTriggers.map(trigger => `- ${trigger}`).join('\n        ')}
+        ${mood.primaryTriggers.map((trigger) => `- ${trigger}`).join("\n        ")}
       </primary_triggers>
       <counter_signals>
-        ${mood.counterSignals.map(signal => `- ${signal}`).join('\n        ')}
+        ${mood.counterSignals.map((signal) => `- ${signal}`).join("\n        ")}
       </counter_signals>
-    </mood>`).join('')}
+    </mood>`,
+      )
+      .join("")}
   </mood_matrix>
 </persona_definition>
 
