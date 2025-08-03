@@ -118,7 +118,6 @@ export async function moveCursor(window: BrowserWindow, endX: number, endY: numb
         clearInterval(moveIntervalId);
         resolve();
       } else {
-        
         window.setBounds({
           x: newX,
           y: newY,
@@ -127,7 +126,8 @@ export async function moveCursor(window: BrowserWindow, endX: number, endY: numb
         });
         // const cursorPos = screen.getCursorScreenPoint();
         const cursorPos = window.getPosition();
-        mouse.setPosition(new Point(cursorPos[0] + 200, cursorPos[1] + 200));
+        const scale = screen.getPrimaryDisplay().scaleFactor;
+        mouse.setPosition(new Point((cursorPos[0] + 100) * scale, (cursorPos[1] + 100) * scale));
       }
     }, moveInterval);
   });

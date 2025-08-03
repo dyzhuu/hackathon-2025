@@ -4,7 +4,8 @@ import { setupIpcs } from './ipc';
 import { join } from 'path';
 import { eventManager, ObservationData } from './handlers/EventManager';
 import { getIntendedActions } from './langgraph/functions';
-import { randomLocation, moveLinear, moveJerk, moveCursor, throwWindow } from './logic/movement';
+import { randomLocation, moveLinear, throwWindow, moveCursor } from './logic/movement';
+import { startServer } from './api/server';
 
 // Create a window
 function createWindow(
@@ -86,6 +87,11 @@ app.whenReady().then(() => {
   const sticky = createWindow('sticky', false, true);
   ipcContext.setMainWindow(sticky);
 
+  // Start API server for LangGraph tool integration
+  startServer().catch((error) => {
+    console.error('❌ Failed to start API server:', error);
+  });
+
   // Start tracking automatically (optional)
   eventManager.start().catch(console.error);
 
@@ -123,6 +129,8 @@ app.whenReady().then(() => {
       if (Math.random() > 0.5) {
         throwWindow(note, pos[0] + (Math.random() > 0.5 ? 1 : -1) * Math.random() * 5000);
       }
+
+      sticky.show();
     });
 
     sticky.show();
@@ -137,7 +145,7 @@ app.whenReady().then(() => {
   // Actions
   const moveActions = {
     linear: moveLinear,
-    // jerk: moveJerk,
+    jerk: moveJerk,
     cursor: moveCursor
   };
 
@@ -182,9 +190,15 @@ app.on('window-all-closed', () => {
   }
 });
 
-// Clean up event tracking when app quits
-app.on('before-quit', () => {
+// Clean up when app quits
+app.on('before-quit', async () => {
+  console.log('🛑 Shutting down application...');
+
+  // Stop event tracking
   eventManager.stop();
+
+  // Stop API server
+  // Server will stop automatically when the process exits
 });
 
 // In this file you can include the rest of your app's specific main process
