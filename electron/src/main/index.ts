@@ -168,10 +168,12 @@ app.whenReady().then(() => {
       ]);
 
       const stickyPos = sticky.getPosition();
+      const xDir = Math.sign(endX - stickyPos[0]);
+      const yDir = Math.sign(endY - stickyPos[1]);
+
       const move: { type: string | null; direction: string } = {
         type: randomKey,
-        direction:
-          Math.sign(endX - stickyPos[0]) === Math.sign(endY - stickyPos[1]) ? 'backslash' : 'slash'
+        direction: xDir === yDir ? (xDir > 0 ? 'rightdown' : 'backslash') : 'slash'
       };
       sticky.webContents.send('sticky-move', move);
 
