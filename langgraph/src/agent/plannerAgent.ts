@@ -35,6 +35,7 @@ const ActionPlanSchema = z.object({
   planDescription: z
     .string()
     .describe("Brief description of what this plan accomplishes"),
+  mood: z.string().describe("The current mood of clippy"),
 });
 
 export class PlannerAgent {
