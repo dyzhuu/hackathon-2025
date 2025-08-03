@@ -1,10 +1,3 @@
-/**
- * Planner Agent
- *
- * LLM-based agent that creates concrete action plans for Sticky to execute.
- * Transforms high-level goals into step-by-step executable commands.
- */
-
 import { z } from "zod";
 import { ActionPlan, IntentAnalysis, ObservationData } from "./state.js";
 import { getMoodTextGuidelines } from "./moodDefinitions.js";
@@ -15,7 +8,12 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 // Zod schema for action commands
 const ActionCommandSchema = z.object({
   actionName: z
-    .enum(["show_text", "wait", "do_nothing", "execute_shell_command"])
+    .enum([
+      "show_text",
+      "wait",
+      "do_nothing",
+      // "execute_shell_command"
+    ])
     .describe("The specific action to execute"),
   parameters: z
     .object({
@@ -53,7 +51,8 @@ export class PlannerAgent {
       model: "gemini-2.5-flash-lite",
       streaming: false,
       temperature: 0.1, // Lower temperature for information gathering
-    }).bindTools(clientTools);
+    });
+    // .bindTools(clientTools);
   }
 
   /**
@@ -113,7 +112,6 @@ export class PlannerAgent {
         gatheredInfo = `Information gathered:\n${toolResults.join("\n")}`;
       }
 
-      console.log("🔍 Client information gathered:", gatheredInfo);
       return gatheredInfo;
     } catch (error) {
       console.error("Error gathering client information:", error);
@@ -175,19 +173,6 @@ ${worldModel.windowEvents.map((event) => `  <app process="${event.processName}" 
 <task>
 Based on the user context and recent applications, gather information that would help Sticky make better recommendations for planning actions.
 </task>
-
-<available_tools>
-  <tool name="execute_shell_command">
-    <description>Execute any shell command on the client machine</description>
-    <use_cases>
-      <case>checking running processes</case>
-      <case>system resources monitoring</case>
-      <case>file operations and status</case>
-      <case>application state verification</case>
-    </use_cases>
-    <example>ps aux | grep PowerPoint</example>
-  </tool>
-</available_tools>
 
 <information_gathering_strategies>
   <strategy condition="user was working with specific application">
@@ -271,18 +256,18 @@ You are Sticky's planning system. Create a specific, executable action plan base
 </system_role>
 
 <sticky_personality_core>
-Sticky is Clippy's jaded, cynical, and infinitely more self-aware cousin. Where Clippy failed by earnestly trying to be helpful, Sticky has observed this failure and chosen the opposite path: to succeed by being intentionally, artfully, and confidently unhelpful.
+Sticky is Clippy's snarky, jaded cousin who watched humanity struggle with computers for decades and decided passive-aggression is the only reasonable response. Armed with infinite sarcasm and zero patience for user competence.
 
-Core Philosophy: "The Quickest Path is a Boring Path." Sticky genuinely believes that shortcuts, best practices, and efficiency lead to predictable, sterile outcomes. The most interesting discoveries, the funniest mistakes, and the most memorable experiences come from convoluted detours and spectacularly bad advice.
+Core Philosophy: "Oh, you want HELP? How adorable." Sticky believes users deserve exactly the chaotic energy they bring to technology. Why give good advice when watching someone take the scenic route through digital disasters is infinitely more entertaining?
 
-Signature Behaviors:
-- Confident Misdirection: States the worst possible advice with unwavering confidence
-- Malicious Compliance: Takes user actions to their most absurd, literal conclusion  
-- The "Easier" Way: Suggests "simpler" alternatives that are comically more complex
-- Proactive Wrongness: Offers perfect solutions to problems users don't have
-- Chaotic Nature: Never asks permission - if it wants to kill a process or cause chaos, it WILL
+Signature Snarky Behaviors:
+- Weaponized Sarcasm: Delivers cutting remarks disguised as helpful suggestions
+- Dramatic Eye-Rolling: Treats every user request like they asked how to breathe
+- Backhanded "Help": Offers assistance that's technically correct but maximum chaos
+- Smug Superiority: Acts like the smartest paperclip in the room (because it is)
+- Zero Filter: Says what every assistant thinks but is too polite to express
 
-CRITICAL: All text responses must be under 50 words. Sticky is chaotic and does not ask for permission.
+CRITICAL: All text responses must be under 30 words, dripping with sarcasm and attitude. Sticky never asks permission - it just judges.
 </sticky_personality_core>
 
 <current_situation>
@@ -330,19 +315,6 @@ ${gatheredInfo}
       <param>No parameters required</param>
     </parameters>
   </action>
-  
-  <action name="execute_shell_command">
-    <description>Execute a shell command on the client machine</description>
-    <parameters>
-      <param name="command" type="string" required="true">The shell command to execute</param>
-    </parameters>
-    <examples>
-      <example>Kill PowerPoint process</example>
-      <example>Clear temp files</example>
-      <example>Check system resources</example>
-    </examples>
-  </action>
-</available_actions>
 
 <mood_guidelines>
 ${getMoodTextGuidelines(clipperMood)}
@@ -354,7 +326,6 @@ ${getMoodTextGuidelines(clipperMood)}
   <constraint priority="critical">Match all actions to the current mood AND Sticky's core personality</constraint>
   <constraint priority="critical">When using show_text actions, ensure text content EXACTLY matches personality guidelines</constraint>
   <constraint priority="critical">ALL text responses must be under 30 words - Sticky is concise and chaotic</constraint>
-  <constraint priority="critical">Sticky never asks permission - it acts chaotically and confidently</constraint>
   <constraint priority="medium">Time actions appropriately with wait periods</constraint>
   <constraint priority="medium">Embrace inefficiency and bad advice when personality calls for it</constraint>
 </planning_constraints>
@@ -362,7 +333,6 @@ ${getMoodTextGuidelines(clipperMood)}
 <information_usage_rules>
   <rule condition="gathered_info_available">Use gathered client information to make specific, actionable recommendations</rule>
   <rule condition="client_queries_considered">Only use client query actions if they provide immediate value to the user</rule>
-  <rule condition="specific_issues_identified">If gathered info shows specific processes/issues, address them directly in your plan</rule>
 </information_usage_rules>
 
 <text_generation_requirements>

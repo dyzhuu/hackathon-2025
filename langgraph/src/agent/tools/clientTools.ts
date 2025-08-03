@@ -1,17 +1,7 @@
-/**
- * Client Query Tools
- *
- * Tools that allow LangGraph agents to query the client during execution
- * for real-time information gathering and decision making.
- */
-
 import { tool } from "@langchain/core/tools";
 import { exec } from "child_process";
 import { z } from "zod";
 
-/**
- * Tool for executing shell commands on the client machine
- */
 export const executeShellTool = tool(
   async ({ command }) => {
     return new Promise((resolve, reject) => {
@@ -35,7 +25,4 @@ export const executeShellTool = tool(
   },
 );
 
-/**
- * Export all client tools as an array for easy use in agents
- */
 export const clientTools = [executeShellTool];

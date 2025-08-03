@@ -1,10 +1,3 @@
-/**
- * Personality Agent
- *
- * LLM-based agent that maintains and updates Sticky's personality/mood state.
- * Acts as an emotional core that determines HOW Sticky should react.
- */
-
 import { z } from "zod";
 import { IntentAnalysis, PersonalityState } from "./state.js";
 import { MOOD_DEFINITIONS } from "./moodDefinitions.js";
@@ -65,7 +58,10 @@ export class PersonalityAgent {
 
       // Validate response structure
       if (!response || !response.clipperMood || !response.moodReason) {
-        console.error("Personality Agent: Invalid response structure", response);
+        console.error(
+          "Personality Agent: Invalid response structure",
+          response,
+        );
         throw new Error("Invalid response from personality model");
       }
 
@@ -90,7 +86,9 @@ export class PersonalityAgent {
       };
     } catch (error) {
       console.error("Personality Agent: Error updating personality", error);
-      console.log(`Personality Agent: Maintaining current mood (${this.currentMood}) due to error`);
+      console.log(
+        `Personality Agent: Maintaining current mood (${this.currentMood}) due to error`,
+      );
 
       // Return current mood on error
       return {

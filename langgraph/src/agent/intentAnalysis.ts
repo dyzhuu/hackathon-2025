@@ -1,10 +1,3 @@
-/**
- * Intent Analysis Agent
- *
- * LLM-based agent that interprets raw observation data to determine user intent.
- * Transforms dense event data into meaningful insights about user behavior.
- */
-
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { z } from "zod";
 import { ObservationData, IntentAnalysis } from "./state.js";

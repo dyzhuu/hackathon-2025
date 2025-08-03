@@ -1,13 +1,3 @@
-/**
- * Multi-Agent Sticky System - Main Graph Implementation
- *
- * This implements the Conductor agent that orchestrates the 6-agent system:
- * START -> Intent Analysis -> Personality Agent -> Planner -> Response -> END
- *
- * The workflow starts with intent analysis receiving observationData from API/SDK calls,
- * then flows through personality updates, planning, and action execution.
- */
-
 import { StateGraph, END, START } from "@langchain/langgraph";
 import { RunnableConfig } from "@langchain/core/runnables";
 import { StateAnnotation } from "./state.js";

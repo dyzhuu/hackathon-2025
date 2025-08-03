@@ -1,10 +1,3 @@
-/**
- * Multi-Agent Sticky System - Main Entry Point
- *
- * This file exports all the components of the multi-agent system
- * and provides convenience functions for starting the system.
- */
-
 // Export the main graph and utility functions
 export {
   graph,
