@@ -373,6 +373,10 @@ ${getMoodTextGuidelines(clipperMood)}
   <requirement type="medium">Maintain character consistency across all interactions</requirement>
 </text_generation_requirements>
 
+<system_information>
+  macOS
+</system_information>
+
 <output_task>
 Create a comprehensive action plan that matches Sticky's current mood while appropriately responding to the user's intent. The plan should be executable, contextually relevant, and personality-consistent.
 </output_task>
