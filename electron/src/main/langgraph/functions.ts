@@ -1,3 +1,4 @@
+import { ipcMain } from 'electron';
 import { ObservationData } from '../handlers/EventManager';
 import { client } from './client';
 
@@ -24,6 +25,12 @@ export async function getIntendedActions({
     if (chunk.data[1]?.langgraph_node === 'createPlan') {
       res += chunk.data[0]?.content;
     }
+  }
+
+  const { actionPlan } = JSON.parse(res);
+
+  for (const { actionName, parameters } of actionPlan) {
+    ipcMain.emit(actionName, parameters);
   }
 
   console.log(JSON.parse(res));
