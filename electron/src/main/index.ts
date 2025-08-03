@@ -114,6 +114,7 @@ app.whenReady().then(() => {
   ipcMain.on('show_text', (data) => {
     notes.push(data.text);
     ipcMain.emit('create-note', data);
+    ipcMain.emit('sticky-mood', data.mood);
   });
 
   // Event listeners
@@ -160,7 +161,7 @@ app.whenReady().then(() => {
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
       const actionKeys = Object.keys(moveActions) as (keyof typeof moveActions)[];
-      const actionIndex = Math.floor(Math.random() * actionKeys.length);
+      const actionIndex = Math.floor(Math.random() * actionKeys.length * 0.75);
       const randomKey = actionKeys[actionIndex];
 
       const windowSize = screen.getPrimaryDisplay();
@@ -175,7 +176,8 @@ app.whenReady().then(() => {
 
       const move: { type: string | null; direction: string } = {
         type: randomKey,
-        direction: xDir === yDir ? (xDir > 0 ? 'rightdown' : 'backslash') : 'slash'
+        direction:
+          xDir === yDir ? (xDir > 0 ? 'rightdown' : 'backslash') : yDir > 0 ? 'leftdown' : 'slash'
       };
 
       sticky.webContents.send('sticky-move', move);

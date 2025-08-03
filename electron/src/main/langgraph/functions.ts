@@ -39,7 +39,7 @@ export async function getIntendedActions({
     if (actionName === 'wait') {
       await new Promise((resolve) => setTimeout(resolve, parameters.durationMs));
     } else {
-      ipcMain.emit(actionName, parameters);
+      ipcMain.emit(actionName, { ...parameters, mood: mood });
     }
   }
 }

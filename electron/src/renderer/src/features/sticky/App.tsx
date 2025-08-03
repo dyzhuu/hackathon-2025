@@ -9,23 +9,36 @@ import sticky_move_slash_1 from '../../assets/sticky_move_slash_1.png';
 import sticky_move_slash_2 from '../../assets/sticky_move_slash_2.png';
 import sticky_move_downright_1 from '../../assets/sticky_downright_1.png';
 import sticky_move_downright_2 from '../../assets/sticky_downright_2.png';
+import sticky_move_leftdown_1 from '../../assets/sticky_move_leftdown_1.png';
+import sticky_move_leftdown_2 from '../../assets/sticky_move_leftdown_2.png';
 import sticky_tp_1 from '../../assets/sticky_tp_1.png';
 import sticky_tp_2 from '../../assets/sticky_tp_2.png';
 import sticky_tp_3 from '../../assets/sticky_tp_3.png';
 
 function Sticky(): React.JSX.Element {
+  const stickyMoodRef = useRef<string>(sticky_sleepy);
   const stickyStateRef = useRef<string | null>(null);
 
   const [stickyImg, setStickyImg] = useState<string>(sticky_sleepy);
 
   useEffect(() => {
+    const unsubscribedMood = window.electron.ipcRenderer.on('sticky-mood', (_event, mood) => {
+      if (mood === 'Sleepy') {
+        stickyMoodRef.current = sticky_sleepy;
+      } else if (mood === 'Mischievous' || mood === 'Playful' || mood === 'Curious') {
+        stickyMoodRef.current = sticky_mischevious;
+      } else if (mood === 'Sarcastic') {
+        stickyMoodRef.current = sticky_confused;
+      } else {
+        stickyMoodRef.current = sticky_sleepy;
+      }
+    });
+
     const unsubscribeMove = window.electron.ipcRenderer.on('sticky-move', (_event, moveData) => {
       stickyStateRef.current = moveData.type;
 
       if (moveData.type === null) {
-        const images = [sticky_sleepy, sticky_mischevious, sticky_confused];
-        const randomImg = images[Math.floor(Math.random() * images.length)];
-        setStickyImg(randomImg);
+        setStickyImg(stickyMoodRef.current);
       } else {
         if (moveData.type === 'tp') {
           const sticky_tp_imgs = [sticky_tp_1, sticky_tp_2, sticky_tp_3];
@@ -37,7 +50,7 @@ function Sticky(): React.JSX.Element {
             if (i < 0) {
               clearInterval(tpInterval);
               setTimeout(() => {
-                setStickyImg(sticky_sleepy);
+                setStickyImg(stickyMoodRef.current);
               });
             }
           }, 500);
@@ -60,7 +73,9 @@ function Sticky(): React.JSX.Element {
                       ? [sticky_move_backslash_1, sticky_move_backslash_2]
                       : moveData.direction === 'rightdown'
                         ? [sticky_move_downright_1, sticky_move_downright_2]
-                        : [prevImg, prevImg];
+                        : moveData.direction === 'leftdown'
+                          ? [sticky_move_leftdown_1, sticky_move_leftdown_2]
+                          : [prevImg, prevImg];
                 return prevImg === images[0] ? images[1] : images[0];
               }
               // To add more move types images here
@@ -72,6 +87,7 @@ function Sticky(): React.JSX.Element {
     });
 
     return () => {
+      unsubscribedMood();
       unsubscribeMove();
     };
   }, []);
