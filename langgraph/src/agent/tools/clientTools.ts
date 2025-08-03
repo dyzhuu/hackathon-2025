@@ -15,7 +15,7 @@ const CLIENT_BASE_URL = process.env.CLIENT_BASE_URL || 'http://localhost:3000';
  * Tool for executing shell commands on the client machine
  */
 export const executeShellTool = tool(
-  async ({ command, timeout = 10000 }) => {
+  async ({ command, timeout = 30000 }) => {
     try {
       console.log(`🔧 Executing shell command on client: ${command}`);
       
@@ -54,7 +54,16 @@ export const executeShellTool = tool(
           success: false,
           result: null,
           output: '',
-          error: `Request timeout after ${timeout}ms`
+          error: `Request timeout after ${timeout}ms - check if client server is running on ${CLIENT_BASE_URL}`
+        };
+      }
+      
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return {
+          success: false,
+          result: null,
+          output: '',
+          error: `Cannot connect to client server at ${CLIENT_BASE_URL} - make sure the Electron app server is running`
         };
       }
       
@@ -71,7 +80,7 @@ export const executeShellTool = tool(
     description: 'Execute a shell command on the client machine and get the output. Useful for checking system state, finding processes, etc.',
     schema: z.object({
       command: z.string().describe('The shell command to execute'),
-      timeout: z.number().optional().default(10000).describe('Timeout in milliseconds (default: 10000)')
+      timeout: z.number().optional().default(30000).describe('Timeout in milliseconds (default: 30000)')
     })
   }
 );
