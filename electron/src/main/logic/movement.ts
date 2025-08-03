@@ -140,7 +140,9 @@ export async function moveCursor(window: BrowserWindow, endX: number, endY: numb
         });
         // const cursorPos = screen.getCursorScreenPoint();
         const cursorPos = window.getPosition();
-        const scale = screen.getPrimaryDisplay().scaleFactor;
+        let scale = screen.getPrimaryDisplay().scaleFactor;
+        if (scale === 2) scale = 1;
+
         mouse.setPosition(new Point((cursorPos[0] + 100) * scale, (cursorPos[1] + 100) * scale));
       }
     }, moveInterval);
