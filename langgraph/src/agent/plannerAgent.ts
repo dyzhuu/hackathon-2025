@@ -16,7 +16,6 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 const ActionCommandSchema = z.object({
   actionName: z
     .enum([
-      "move_cursor",
       "show_text",
       "wait",
       "do_nothing",
@@ -25,13 +24,9 @@ const ActionCommandSchema = z.object({
     .describe("The specific action to execute"),
   parameters: z
     .object({
-      x: z.number().optional(),
-      y: z.number().optional(),
-      relative: z.boolean().optional(),
       text: z.string().optional(),
       durationMs: z.number().optional(),
       position: z.object({ x: z.number(), y: z.number() }).optional(),
-
       command: z.string().optional(),
     })
     .describe("Parameters needed for the action"),
@@ -185,10 +180,6 @@ Based on this context, you should gather information that would help Sticky make
    - Use for: checking running processes, system resources, file operations
    - Example: "ps aux | grep PowerPoint" to check if PowerPoint is running
 
-2. **query_processes**: Query running processes, optionally filtered by name
-   - Use for: finding specific applications, checking process status
-   - Example: query_processes with processName="PowerPoint"
-
 ## Examples:
 - If the user was working with PowerPoint, check if PowerPoint is still running
 - If they seem to be having issues, check system resources or error logs
@@ -276,19 +267,16 @@ ${gatheredInfo}
     : ""
 }## Available Actions
 
-1. **move_cursor**: Move the user's cursor
-   - Parameters: {x: number, y: number, relative?: boolean}
-
-2. **show_text**: Display text bubble/tooltip
+1. **show_text**: Display text bubble/tooltip
    - Parameters: {text: string, durationMs?: number, position?: {x, y}}
 
-3. **wait**: Pause execution
+2. **wait**: Pause execution
    - Parameters: {durationMs: number}
 
-4. **do_nothing**: Do nothing and immediately return
+3. **do_nothing**: Do nothing and immediately return
    - Parameters: {} (no parameters required)
 
-5. **execute_shell_command**: Execute a shell command on the client machine
+4. **execute_shell_command**: Execute a shell command on the client machine
    - Parameters: {command: string}
    - Example: Kill PowerPoint process, clear temp files, etc.
 
@@ -340,17 +328,6 @@ Create a plan that matches Sticky's current mood while appropriately responding 
 
       // Validate specific action parameters
       switch (action.actionName) {
-        case "move_cursor":
-          if (
-            typeof action.parameters.x !== "number" ||
-            typeof action.parameters.y !== "number"
-          ) {
-            errors.push(
-              `Action ${i + 1}: move_cursor requires x and y coordinates`,
-            );
-          }
-          break;
-
         case "show_text":
           if (typeof action.parameters.text !== "string") {
             errors.push(

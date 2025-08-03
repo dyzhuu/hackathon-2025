@@ -148,9 +148,6 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 
-  // Actions
-  ipcMain.emit('create-note');
-
   const moveActions = {
     linear: moveLinear,
     tp: moveTp
