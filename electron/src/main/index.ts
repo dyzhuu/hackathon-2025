@@ -109,7 +109,7 @@ app.whenReady().then(() => {
     getIntendedActions({ observationData: windowData });
   });
 
-  const notes: string[] = ["Hi, I'm Sticky!"];
+  const notes: string[] = [];
 
   ipcMain.on('show_text', (data) => {
     notes.push(data.text);

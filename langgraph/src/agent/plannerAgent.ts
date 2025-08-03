@@ -15,7 +15,13 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 // Zod schema for action commands
 const ActionCommandSchema = z.object({
   actionName: z
-    .enum(["move_cursor", "show_text", "wait", "do_nothing"])
+    .enum([
+      "move_cursor",
+      "show_text",
+      "wait",
+      "do_nothing",
+      "execute_shell_command",
+    ])
     .describe("The specific action to execute"),
   parameters: z
     .object({
@@ -25,6 +31,8 @@ const ActionCommandSchema = z.object({
       text: z.string().optional(),
       durationMs: z.number().optional(),
       position: z.object({ x: z.number(), y: z.number() }).optional(),
+
+      command: z.string().optional(),
     })
     .describe("Parameters needed for the action"),
 });
@@ -65,37 +73,39 @@ export class PlannerAgent {
     intentAnalysis: IntentAnalysis,
     worldModel: ObservationData,
   ): Promise<string> {
-    const shouldGatherInfo = this.shouldGatherInformation(intentAnalysis, worldModel);
-    
+    const shouldGatherInfo = this.shouldGatherInformation(
+      intentAnalysis,
+      worldModel,
+    );
+
     if (!shouldGatherInfo) {
       return "No additional information needed.";
     }
 
     try {
-      const gatheringPrompt = this.buildInformationGatheringPrompt(intentAnalysis, worldModel);
-      
-      console.log("🔍 Gathering client information with prompt:", gatheringPrompt.substring(0, 200) + "...");
-      
-      const response = await this.toolEnabledModel.invoke([
-        { role: "user", content: gatheringPrompt }
-      ]);
+      const gatheringPrompt = this.buildInformationGatheringPrompt(
+        intentAnalysis,
+        worldModel,
+      );
 
-      console.log("📋 LLM response:", {
-        content: response.content?.substring(0, 100) + "...",
-        toolCalls: response.tool_calls?.length || 0
-      });
+      const response = await this.toolEnabledModel.invoke([
+        { role: "user", content: gatheringPrompt },
+      ]);
 
       // Process tool calls if any were made
       let gatheredInfo = "Information gathering completed.";
-      
+
       if (response.tool_calls && response.tool_calls.length > 0) {
         const toolResults = [];
-        
+
         for (const toolCall of response.tool_calls) {
           try {
-            const tool = clientTools.find(t => t.name === toolCall.name);
+            const tool = clientTools.find((t) => t.name === toolCall.name);
             if (tool) {
-              console.log(`🔧 Executing tool: ${toolCall.name} with args:`, toolCall.args);
+              console.log(
+                `🔧 Executing tool: ${toolCall.name} with args:`,
+                toolCall.args,
+              );
               const result = await (tool as any).invoke(toolCall.args);
               toolResults.push(`${toolCall.name}: ${JSON.stringify(result)}`);
             } else {
@@ -104,11 +114,13 @@ export class PlannerAgent {
             }
           } catch (error) {
             console.error(`Error executing tool ${toolCall.name}:`, error);
-            toolResults.push(`${toolCall.name}: Error - ${error instanceof Error ? error.message : 'Unknown error'}`);
+            toolResults.push(
+              `${toolCall.name}: Error - ${error instanceof Error ? error.message : "Unknown error"}`,
+            );
           }
         }
-        
-        gatheredInfo = `Information gathered:\n${toolResults.join('\n')}`;
+
+        gatheredInfo = `Information gathered:\n${toolResults.join("\n")}`;
       }
 
       console.log("🔍 Client information gathered:", gatheredInfo);
@@ -128,14 +140,17 @@ export class PlannerAgent {
   ): boolean {
     // Gather info if user seems to be working with specific applications
     const hasApplicationContext = worldModel.windowEvents.some(
-      event => event.processName && event.processName !== 'Finder' && event.processName !== 'Desktop'
+      (event) =>
+        event.processName &&
+        event.processName !== "Finder" &&
+        event.processName !== "Desktop",
     );
 
     // Gather info for certain workflow stages
     const shouldGatherForWorkflow = [
-      'problemsolving',
-      'executing',
-      'reviewing'
+      "problemsolving",
+      "executing",
+      "reviewing",
     ].includes(intentAnalysis.workflowStage);
 
     // Gather info if there's a specific challenge described
@@ -158,10 +173,10 @@ Current user context:
 - Goal: ${intentAnalysis.primaryGoal}
 - Activity: ${intentAnalysis.currentActivity}
 - Stage: ${intentAnalysis.workflowStage}
-- Challenge: ${intentAnalysis.challengeDescription || 'None'}
+- Challenge: ${intentAnalysis.challengeDescription || "None"}
 
 Recent applications used:
-${worldModel.windowEvents.map(event => `- ${event.processName}: ${event.windowTitle}`).join('\n')}
+${worldModel.windowEvents.map((event) => `- ${event.processName}: ${event.windowTitle}`).join("\n")}
 
 Based on this context, you should gather information that would help Sticky make better recommendations.
 
@@ -192,7 +207,10 @@ Be selective - only gather information that would actually help with planning. U
   ): Promise<ActionPlan> {
     try {
       // First, gather additional information from the client if needed
-      const gatheredInfo = await this.gatherClientInformation(intentAnalysis, worldModel);
+      const gatheredInfo = await this.gatherClientInformation(
+        intentAnalysis,
+        worldModel,
+      );
 
       const prompt = this.buildPlanningPrompt(
         intentAnalysis,
@@ -247,12 +265,16 @@ ${clipperMood}
 ${JSON.stringify(worldModel, null, 2)}
 </world_model>
 
-${gatheredInfo ? `## Additional Client Information
+${
+  gatheredInfo
+    ? `## Additional Client Information
 <gathered_info>
 ${gatheredInfo}
 </gathered_info>
 
-` : ''}## Available Actions
+`
+    : ""
+}## Available Actions
 
 1. **move_cursor**: Move the user's cursor
    - Parameters: {x: number, y: number, relative?: boolean}
@@ -265,6 +287,10 @@ ${gatheredInfo}
 
 4. **do_nothing**: Do nothing and immediately return
    - Parameters: {} (no parameters required)
+
+5. **execute_shell_command**: Execute a shell command on the client machine
+   - Parameters: {command: string}
+   - Example: Kill PowerPoint process, clear temp files, etc.
 
 ## Mood-Based Planning Guidelines
 
@@ -339,6 +365,14 @@ Create a plan that matches Sticky's current mood while appropriately responding 
             action.parameters.durationMs < 0
           ) {
             errors.push(`Action ${i + 1}: wait requires positive durationMs`);
+          }
+          break;
+
+        case "execute_shell_command":
+          if (typeof action.parameters.command !== "string") {
+            errors.push(
+              `Action ${i + 1}: execute_shell_command requires command parameter`,
+            );
           }
           break;
       }
