@@ -4,7 +4,7 @@ import { setupIpcs } from './ipc';
 import { join } from 'path';
 import { eventManager, ObservationData } from './handlers/EventManager';
 import { getIntendedActions } from './langgraph/functions';
-import { randomLocation, moveLinear, moveJerk, throwWindow, moveCursor } from './logic/movement';
+import { randomLocation, moveLinear, moveTp, moveJerk, throwWindow, moveCursor } from './logic/movement';
 import { startServer } from './api/server';
 
 // Create a window
@@ -152,8 +152,9 @@ app.whenReady().then(() => {
   ipcMain.emit('create-note');
 
   const moveActions = {
-    linear: moveLinear
-    // jerk: moveJerk,
+    linear: moveLinear,
+    tp: moveTp
+    // jerk: moveJerk
     // cursor: moveCursor
   };
 
@@ -179,6 +180,7 @@ app.whenReady().then(() => {
         type: randomKey,
         direction: xDir === yDir ? (xDir > 0 ? 'rightdown' : 'backslash') : 'slash'
       };
+
       sticky.webContents.send('sticky-move', move);
 
       await moveActions[randomKey](sticky, endX, endY);

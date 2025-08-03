@@ -48,6 +48,20 @@ export async function moveLinear(window: BrowserWindow, endX: number, endY: numb
   });
 }
 
+export async function moveTp(window: BrowserWindow, x: number, y: number): Promise<void> {
+  new Promise<void>((resolve) => {
+    setTimeout(() => {
+      window.setBounds({
+        x,
+        y,
+        width: 200,
+        height: 200
+      });
+      resolve();
+    }, 1000);
+  });
+}
+
 export async function moveJerk(window: BrowserWindow, x: number, y: number): Promise<void> {
   const velocity = 500;
   const jork = 20;

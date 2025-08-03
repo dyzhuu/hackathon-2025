@@ -9,6 +9,9 @@ import sticky_move_slash_1 from '../../assets/sticky_move_slash_1.png';
 import sticky_move_slash_2 from '../../assets/sticky_move_slash_2.png';
 import sticky_move_downright_1 from '../../assets/sticky_downright_1.png';
 import sticky_move_downright_2 from '../../assets/sticky_downright_2.png';
+import sticky_tp_1 from '../../assets/sticky_tp_1.png';
+import sticky_tp_2 from '../../assets/sticky_tp_2.png';
+import sticky_tp_3 from '../../assets/sticky_tp_3.png';
 
 function Sticky(): React.JSX.Element {
   function createNote(): void {
@@ -29,6 +32,23 @@ function Sticky(): React.JSX.Element {
         const randomImg = images[Math.floor(Math.random() * images.length)];
         setStickyImg(randomImg);
       } else {
+        if (moveData.type === 'tp') {
+          const sticky_tp_imgs = [sticky_tp_1, sticky_tp_2, sticky_tp_3];
+
+          let i = sticky_tp_imgs.length - 1;
+          const tpInterval = setInterval(() => {
+            setStickyImg(sticky_tp_imgs[i]);
+            i--;
+            if (i < 0) {
+              clearInterval(tpInterval);
+              setTimeout(() => {
+                setStickyImg(sticky_sleepy);
+              });
+            }
+          }, 500);
+          return;
+        }
+
         const linearInterval = setInterval(() => {
           if (stickyStateRef.current === null) {
             clearInterval(linearInterval);
