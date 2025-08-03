@@ -11,11 +11,6 @@ import sticky_move_downright_1 from '../../assets/sticky_downright_1.png';
 import sticky_move_downright_2 from '../../assets/sticky_downright_2.png';
 
 function Sticky(): React.JSX.Element {
-  function createNote(): void {
-    const data = 'note data';
-    window.electron.ipcRenderer.send('create-note', data);
-  }
-
   const stickyStateRef = useRef<string | null>(null);
 
   const [stickyImg, setStickyImg] = useState<string>(sticky_sleepy);
@@ -64,10 +59,6 @@ function Sticky(): React.JSX.Element {
   return (
     <div className="m-0 w-full min-h-screen flex flex-col justify-center items-center bg-transparent">
       <img src={stickyImg} alt="sticky" draggable={false} className="w-50 h-50" />
-
-      {/* <button onClick={createNote} className="rounded-md p-2 text-white font-bold bg-gray-700">
-        Create Note
-      </button> */}
     </div>
   );
 }

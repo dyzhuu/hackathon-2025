@@ -96,13 +96,13 @@ npm run start
 
 The Response Agent can execute these actions:
 
-- `move_cursor` - Move the user's cursor
 - `show_text` - Display text bubbles/tooltips  
 - `play_sound` - Play audio clips
 - `wait` - Pause execution
 - `speak_text` - Text-to-speech
 - `animate_sticky` - Animate Sticky character
 - `show_tooltip` - Show informational tooltips
+- `execute_shell_command` - Execute shell commands on the client machine
 - `highlight_element` - Highlight UI elements
 - `shake_window` - Shake the application window
 - `change_cursor` - Change cursor appearance

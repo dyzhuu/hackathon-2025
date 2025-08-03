@@ -4,7 +4,7 @@ import { setupIpcs } from './ipc';
 import { join } from 'path';
 import { eventManager, ObservationData } from './handlers/EventManager';
 import { getIntendedActions } from './langgraph/functions';
-import { randomLocation, moveLinear, moveJerk, throwWindow, moveCursor } from './logic/movement';
+import { randomLocation, moveLinear, throwWindow } from './logic/movement';
 import { startServer } from './api/server';
 
 // Create a window
@@ -147,9 +147,6 @@ app.whenReady().then(() => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
-
-  // Actions
-  ipcMain.emit('create-note');
 
   const moveActions = {
     linear: moveLinear

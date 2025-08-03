@@ -27,7 +27,13 @@ export async function getIntendedActions({
     }
   }
 
-  const { actionPlan } = JSON.parse(res);
+  console.log(res);
+
+  // Extract JSON from response that may contain text before the JSON object
+  const jsonMatch = res.match(/\{[\s\S]*\}/);
+  const jsonString = jsonMatch ? jsonMatch[0] : res;
+
+  const { actionPlan, mood } = JSON.parse(jsonString);
 
   for (const { actionName, parameters } of actionPlan) {
     if (actionName === 'wait') {
@@ -36,6 +42,4 @@ export async function getIntendedActions({
       ipcMain.emit(actionName, parameters);
     }
   }
-
-  console.log(JSON.parse(res));
 }
