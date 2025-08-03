@@ -30,7 +30,11 @@ export async function getIntendedActions({
   const { actionPlan } = JSON.parse(res);
 
   for (const { actionName, parameters } of actionPlan) {
-    ipcMain.emit(actionName, parameters);
+    if (actionName === 'wait') {
+      await new Promise((resolve) => setTimeout(resolve, parameters.durationMs));
+    } else {
+      ipcMain.emit(actionName, parameters);
+    }
   }
 
   console.log(JSON.parse(res));
